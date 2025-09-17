@@ -549,6 +549,7 @@ menu(){
  	green "d. cd2 安装"
    	green "e. Rclone安装"
 	green "f. CasaOS 安装"
+ 	green "g. YAML下载"
 	green "z. Docker 安装"
  	green "x. 一键换源"
     red   "dd. 脚本更新"
@@ -571,6 +572,7 @@ menu(){
   		d) bash <(curl -sSLf https://ailg.ggbond.org/cd2.sh) ;;
 	    e) curl https://rclone.org/install.sh | sudo bash ;;
         f) wget -qO- https://get.casaos.io | sudo bash ;;
+		g) rm -rf toolbox && git clone https://gh.130401.xyz/https://github.com/f1161291/toolbox  && cd toolbox && chmod +x tool.sh  && bash tool.sh ;;
 		x) bash <(curl -sSL https://linuxmirrors.cn/main.sh);; 
   		z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun  ;;
 		0) bash <(curl -fsSL https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
