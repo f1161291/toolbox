@@ -1,0 +1,12 @@
+services:
+  tvhelper:
+    image: wukongdaily/box:latest  # 指定构建完成后的镜像名称和标签
+    ports:
+      - "2299:2299"  # 用于ssh
+      - "2280:2280"  # 用于重定向到盒子助手资讯页
+      - "15000:15000"  # 将容器的15000端口映射到宿主机的15000端口，以便通过浏览器dufs文件服务器 上传xapk或者apk 
+    volumes:
+      - /share/upload/tvhelper_data:/data  # 根据需要映射数据卷，此处假设您希望持久化的数据位于./data目录
+    restart: unless-stopped  # 除非明确要求停止，否则总是重启容器
+    environment:
+      - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/android-sdk/platform-tools
