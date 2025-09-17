@@ -1,0 +1,7 @@
+services:
+  webssh:
+    image: cmliu/webssh
+    restart: always
+    container_name: webssh
+    ports:
+      - '222:22'
