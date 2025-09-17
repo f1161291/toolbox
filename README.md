@@ -4,7 +4,7 @@
 
 # 从仓库下载源码
 ```shell
-rm -rf toolbox && git clone https://gh.130401.xyz/https://github.com/f1161291/docker  && cd docker && chmod +x tool.sh  && bash tool.sh
+rm -rf toolbox && git clone https://gh.130401.xyz/https://github.com/f1161291/toolbox  && cd toolbox && chmod +x tool.sh  && bash tool.sh
 ```
 
 
