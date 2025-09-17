@@ -559,14 +559,14 @@ menu(){
 		1) root_user ;;
 		2) open_ports ;;
 		3) bash <(wget --no-check-certificate -qO- 'https://raw.githubusercontent.com/MoeClub/Note/master/InstallNET.sh') -d 10 -v 64 -p 123456789 ;;
-		4) wget -N --no-check-certificate https://raw.githubusercontent.com/Misaka-blog/hysteria-install/main/hy2/hysteria.sh && bash hysteria.sh ;;
+		4) wget -N --no-check-certificate https://gh.130401.xyz/https://raw.githubusercontent.com/Misaka-blog/hysteria-install/main/hy2/hysteria.sh && bash hysteria.sh ;;
 		5) curl -fsSL https://res.oplist.org/script/v4.sh > install-openlist-v4.sh && sudo bash install-openlist-v4.sh ;;
-		6) bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh) ;;
+		6) bash <(curl -Ls https://gh.130401.xyz/https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh) ;;
 		7) apt update -y && apt upgrade -y && apt install git -y && bash <(curl -fsSL https://raw.githubusercontent.com/slobys/SSL-Renewal/main/acme.sh) ;;
 		8) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/Oracle-server-keep-alive-script/-/raw/main/oalive.sh) ;;
-		9) wget -q https://raw.githubusercontent.com/yanyuwangluo/VIP/main/Scripts/sh/ql.sh -O ql.sh && bash ql.sh ;;
+		9) wget -q https://gh.130401.xyz/https://raw.githubusercontent.com/yanyuwangluo/VIP/main/Scripts/sh/ql.sh -O ql.sh && bash ql.sh ;;
 		10) tcp_up ;; 
-        a) bash <(curl -fsSL https://raw.githubusercontent.com/jonssonyan/h-ui/main/install.sh) ;;
+        a) bash <(curl -fsSL https://gh.130401.xyz/https://raw.githubusercontent.com/jonssonyan/h-ui/main/install.sh) ;;
 		b) curl -fsSL https://tailscale.com/install.sh | sh ;; 
 		c) wget -N git.io/aria2.sh && chmod +x aria2.sh && bash aria2.sh ;;       
   		d) bash <(curl -sSLf https://ailg.ggbond.org/cd2.sh) ;;
@@ -575,7 +575,7 @@ menu(){
 		g) rm -rf toolbox && git clone https://gh.130401.xyz/https://github.com/f1161291/toolbox  && cd toolbox && chmod +x tool.sh  && bash tool.sh ;;
 		x) bash <(curl -sSL https://linuxmirrors.cn/main.sh);; 
   		z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun  ;;
-		0) bash <(curl -fsSL https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
+		0) bash <(curl -fsSL https://gh.130401.xyz/https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
         dd) apt update -y && wget -N --no-check-certificate https://raw.githubusercontent.com/f1161291/docker/main/tool.sh && chmod +x tool.sh && bash tool.sh ;;
               
 	esac
