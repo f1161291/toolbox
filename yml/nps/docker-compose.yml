@@ -1,8 +1,0 @@
-services:
-  nps:
-    image: yisier1/nps
-    restart: always
-    network_mode: host
-    volumes:
-      - /root/docker/nps/config:/conf
-      - /etc/localtime:/etc/localtime
