@@ -7,8 +7,8 @@ services:
 #      - mariadb
     volumes:
       - /share:/srv
-      - ./filebrowser/config/config.json:/etc/config.json
-      - ./filebrowser/db/database.db:/etc/database.db
+      - /root/docker/filebrowser/config/config.json:/etc/config.json
+      - /root/docker/filebrowser/db/database.db:/etc/database.db
 #    environment:
 #      - DB_HOST=mariadb
 #      - DB_USER=admin
