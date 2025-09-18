@@ -1,0 +1,26 @@
+services:
+  filebrowser:
+    container_name: filebrowser
+    image: filebrowser/filebrowser:latest
+    restart: always
+#    depends_on:
+#      - mariadb
+    volumes:
+      - /share:/srv
+      - ./filebrowser/config/config.json:/etc/config.json
+      - ./filebrowser/db/database.db:/etc/database.db
+#    environment:
+#      - DB_HOST=mariadb
+#      - DB_USER=admin
+#      - DB_PASS=admin
+#      - DB_NAME=notepad
+#      - DB_PORT=3306
+#      - PGID=1000
+#      - PUID=1000
+#      - TZ=Aisa/Shanghai
+    ports:
+      - "8080:80"
+    networks:
+      - filebrowser
+networks:
+    filebrowser:
