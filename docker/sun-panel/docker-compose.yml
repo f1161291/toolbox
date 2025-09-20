@@ -1,0 +1,12 @@
+services:
+  sun-panel:
+    image: "hslr/sun-panel:latest"
+    container_name: sun-panel
+    volumes:
+      - /root/docker/sunpanel/conf:/app/conf
+      - /var/run/docker.sock:/var/run/docker.sock # 挂载docker.sock
+      # - ./runtime:/app/runtime # 挂载日志目录
+      # - /mnt/sata1-1:/os # 硬盘挂载点（根据自己需求修改）
+    ports:
+      - 3002:3002
+    restart: always
