@@ -578,7 +578,7 @@ menu(){
 		x) bash <(curl -sSL https://linuxmirrors.cn/main.sh);; 
   		z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun  ;;
 		0) bash <(curl -fsSL https://gh.130401.xyz/https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
-        dd) apt update -y && wget -N --no-check-certificate https://raw.githubusercontent.com/f1161291/toolbox/main/tool.sh && chmod +x tool.sh && bash tool.sh ;;
+        dd) wget -N --no-check-certificate https://raw.githubusercontent.com/f1161291/toolbox/main/tool.sh && chmod +x tool.sh && bash tool.sh ;;
               
 	esac
 }
