@@ -5,7 +5,7 @@ services:
     user: '0:0' # Please replace `0:0` with the actual user ID and group ID you want to use to run OpenList.
     volumes:
       - './data:/opt/openlist/data'
-      - ' /vol2/1000/Share:/share'
+      - '/vol2/1000/Share:/share'
     ports:
       - '5244:5244'
     environment:
