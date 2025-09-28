@@ -2,11 +2,8 @@ services:
   moments:
     image: 'kingwrcy/moments:latest'
     container_name: moments
-    user: '0:0' # Please replace `0:0` with the actual user ID and group ID you want to use to run OpenList.
     volumes:
       - '/share/zone/moments:/app/data'
     ports:
       - '3333:3000'
- #   environment:
-  #    - UMASK=022
     restart: always
