@@ -17,5 +17,5 @@ services:
     cap_add:
       - ALL
     volumes:
-      - ./config.yaml:/root/.config/mihomo
+      - /root/docker/clash/config.yaml:/root/.config/mihomo
       - /dev/net/tun:/dev/net/tun
