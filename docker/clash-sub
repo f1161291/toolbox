@@ -1,0 +1,7 @@
+services:
+  subconverter:
+    image: asdlokj1qpi23/subconverter:latest
+    container_name: subconverter
+    ports:
+      - "25050:25500"
+    restart: always
