@@ -1,0 +1,13 @@
+services:
+    clash:
+        image: laoyutang/clash-and-dashboard:latest
+        container_name: clash
+        restart: always
+        ports:
+            - '7888:8080'
+            - '7890:7890'
+        logging:
+            options:
+                max-size: '1m'
+        volumes:
+            - /root/docker/clash/:/root/.config/clash/
