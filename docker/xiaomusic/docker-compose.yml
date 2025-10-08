@@ -2,7 +2,7 @@ services:
   xiaomusic:
     image: hanxi/xiaomusic
     container_name: xiaomusic
-    restart: unless-stopped
+    restart: always
     ports:
       - '58090:8090'
     environment:
