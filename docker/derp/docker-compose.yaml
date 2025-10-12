@@ -1,0 +1,11 @@
+services:
+  derp:
+    image: 'yangchuansheng/derper:latest'
+    container_name: derp
+    ports:
+      - '1234:1234'
+      - '3478:3478/udp'
+    environment:
+      - DERP_ADDR=:1234
+      - DERP_DOMAIN=***
+    restart: always
