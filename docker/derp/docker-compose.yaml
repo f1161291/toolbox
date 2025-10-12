@@ -9,6 +9,6 @@ services:
     volumes:
       - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock # 映射本地 tailscale 客户端验证连接，用来验证是否被偷
     environment:
-      - DERP_ADDR=:12345 # 此处需要与上面的同步修改  
-      - DERP_DOMAIN=***
+      - DERP_ADDR=:12345 # 此处需要与上面的同步修改
+      - DERP_CERTS=/app/certs
       - DERP_VERIFY_CLIENTS=true # 启动客户端验证，这是防偷的最重要的参数
