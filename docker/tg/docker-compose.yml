@@ -1,0 +1,27 @@
+services:
+  telegram_media_downloader:
+    image: tangyoha/telegram_media_downloader:latest
+    build: .
+    ports:
+      # Here is what you need to edit
+      - "5000:5000"
+    #environment:
+    #  - http_proxy=http://192.168.101.30:10811
+    #  - https_proxy=http://192.168.101.30:10811
+    volumes:
+      # Here is what you need to edit
+      - "./downloads/:/app/downloads/"
+
+      # Rclone
+      - "$HOME/.config/rclone/:$HOME/.config/rclone/"
+
+      # The following is what you don't need to edit
+      - "./config.yaml:/app/config.yaml"
+      - "./data.yaml:/app/data.yaml"
+      - "./log/:/app/log/"
+      - "./sessions/:/app/sessions"
+      - "./temp/:/app/temp"
+    #restart: "unless-stopped"
+# volumes:
+#   sessions:
+#   temp:
