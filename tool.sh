@@ -543,7 +543,7 @@ menu(){
 	green "9. 青龙面板"
 	green "10. TCP调优"
 	green "0. 极光面板"
-	green "a. H-UI"
+	green "a. S-UI"
   	green "b. tailscale"
  	green "c. aria2 安装"
  	green "d. cd2 安装"
