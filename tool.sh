@@ -568,7 +568,7 @@ menu(){
 		8) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/Oracle-server-keep-alive-script/-/raw/main/oalive.sh) ;;
 		9) wget -q https://gh.130401.xyz/https://raw.githubusercontent.com/yanyuwangluo/VIP/main/Scripts/sh/ql.sh -O ql.sh && bash ql.sh ;;
 		10) tcp_up ;; 
-        a) bash <(curl -fsSL https://gh.130401.xyz/https://raw.githubusercontent.com/jonssonyan/h-ui/main/install.sh) ;;
+        a) bash <(curl -Ls https://gh.130401.xyz/https://raw.githubusercontent.com/alireza0/s-ui/master/install.sh) ;;
 		b) curl -fsSL https://tailscale.com/install.sh | sh ;; 
 		c) wget -N git.io/aria2.sh && chmod +x aria2.sh && bash aria2.sh ;;       
   		d) bash <(curl -sSLf https://ailg.ggbond.org/cd2.sh) ;;
