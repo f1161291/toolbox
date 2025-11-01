@@ -6,4 +6,4 @@ services:
       - "8097:7023"
     restart: always
     volumes:
-      - ./data:/app/data
+      - "./data:/app/data"
