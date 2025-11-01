@@ -1,24 +1,32 @@
 api_hash: your_api_hash
 api_id: your_api_id
-chat:
-- chat_id: telegram_chat_id
-  last_read_message_id: 0
+bot_token:
+#chat:
+#- chat_id: telegram_chat_id
+#  last_read_message_id: 0
 file_formats:
-  audio:
-  - all
-  document:
-  - all
+#  audio:
+ # - all
+#  document:
+ # - all
   video:
   - all
 file_path_prefix:
 - chat_title
-- media_datetime
+#- media_datetime
+file_name_prefix:
+- caption
+- file_name
 media_types:
-- audio
-- photo
+#- audio
+#- photo
 - video
-- document
-- voice
-- video_note
+#- document
+#- voice
+#- video_note
 # in linux please use /
 # save_path: E:\github\telegram_media_downloader
+proxy:
+  scheme: socks5
+  hostname: 172.17.0.1
+  port: 20170
