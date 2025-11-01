@@ -26,6 +26,7 @@ media_types:
 #- video_note
 # in linux please use /
 # save_path: E:\github\telegram_media_downloader
+web_login_secret: s19194
 proxy:
   scheme: socks5
   hostname: 172.17.0.1
