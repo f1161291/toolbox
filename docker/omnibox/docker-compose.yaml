@@ -1,9 +1,9 @@
 services:
   omnibox:
-    image:lampon/omnibox:latest
-    container_name:omnibox
+    image: lampon/omnibox:latest
+    container_name: omnibox
     ports:
-      -"7023:7023"
-    restart:always
+      - "8097:7023"
+    restart: always
     volumes:
-      -./data:/app/data
+      - ./data:/app/data
