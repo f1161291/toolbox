@@ -1,3 +1,0 @@
-docker run --name gopeed -d -p 9999:9999 \
-    -v /path/to/download:/app/Downloads \
-    -v /path/to/storage:/app/storage liwei2633/gopeed
