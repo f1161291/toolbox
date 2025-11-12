@@ -7,3 +7,5 @@ services:
     restart: always
     volumes:
       - "./data:/app/data"
+    environment:
+      - TZ=Asia/Shanghai
