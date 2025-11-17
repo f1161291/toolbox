@@ -6,4 +6,4 @@ ervices:
     network_mode: host
     environment:
       - mport=51234
-      - mhost=http://NASIP:51234
+      - mhost=http://172.17.0.1:51234
