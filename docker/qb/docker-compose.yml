@@ -8,5 +8,5 @@ services:
   # environment:     # 设置环境变量
   #   -
     volumes:
-      - /root/docker/xunlei/data:/xunlei/data
+      - ./xunlei/data:/xunlei/data
       - /mnt/xl:/xunlei/downloads
