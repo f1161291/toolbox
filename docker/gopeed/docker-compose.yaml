@@ -6,5 +6,5 @@ services:
       - "9999:9999"  # 访问WEB端口
     volumes:
       - /mnt/metube/gopeed:/app/Downloads  # 挂载下载路径
-      - /root/docker/gopeed/storage:/app/storage #数据保存路径
+      - ./gopeed/storage:/app/storage #数据保存路径
     restart: always  # 除非明确要求停止，否则总是重启容器
