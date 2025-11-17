@@ -1,0 +1,9 @@
+ervices:
+  migu_video:
+    image: develop767/migu_video
+    container_name: migu_video
+    restart: always
+    network_mode: host
+    environment:
+      - mport=51234
+      - mhost=http://NASIP:51234
