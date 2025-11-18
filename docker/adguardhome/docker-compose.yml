@@ -8,5 +8,5 @@ services:
       - 153:53/udp
       - 3000:3000/tcp
     volumes:
-      - ./workdir:/opt/adguardhome/work
-      - ./confdir:/opt/adguardhome/conf
+      - /root/docker/adguardhome/workdir:/opt/adguardhome/work
+      - /root/docker/adguardhome/confdir:/opt/adguardhome/conf
