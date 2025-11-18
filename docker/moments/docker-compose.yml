@@ -3,7 +3,7 @@ services:
     image: 'kingwrcy/moments:latest'
     container_name: moments  # 朋友圈
     volumes:
-      - './moments:/app/data'
+      - '/root/docker/moments:/app/data'
     ports:
       - '3333:3000'
     restart: always
