@@ -1,6 +1,12 @@
-docker run -itd --name=lookbusy --restart=always \
-   -e TZ=Asia/Shanghai \
-   -e CPU_UTIL=10-20 \ # CPU占用，单位%，不可省略，支持固定值或范围
-   -e MEM_UTIL=15 \ # 内存占用，单位%，不跑内存可省略
-   -e SPEEDTEST_INTERVAL=120 \ # 网络测速间隔，单位分钟，不跑网络可省略
-   fogforest/lookbusy
+services:
+  lookbusy:
+    container_name: lookbusy
+    image: fogforest/lookbusy
+    restart: always
+    tty: true
+    stdin_open: true
+    environment:
+      - TZ=Asia/Shanghai
+      - CPU_UTIL=10-20       # CPU占用（单位%），支持范围值
+      - MEM_UTIL=15          # 内存占用（单位%）
+      - SPEEDTEST_INTERVAL=600 # 网络测速间隔（分钟）
