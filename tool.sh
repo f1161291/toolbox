@@ -578,8 +578,8 @@ menu(){
 		g) rm -rf toolbox && git clone https://gh.130401.xyz/https://github.com/f1161291/toolbox  && cd toolbox && chmod +x tool.sh  && bash tool.sh ;;
         h) bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)  ;;
 		i) bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)"  ;;
-		j) bash <(curl -sL kejilion.sh)
-		x) bash <(curl -sSL https://linuxmirrors.cn/main.sh);; 
+		j) bash <(curl -sL kejilion.sh) ;;
+		x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;; 
   		z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun  ;;
 		0) bash <(curl -fsSL https://gh.130401.xyz/https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
         dd) wget -N --no-check-certificate https://gh.130401.xyz/https://raw.githubusercontent.com/f1161291/toolbox/main/tool.sh && chmod +x tool.sh && bash tool.sh ;;
