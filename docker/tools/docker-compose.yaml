@@ -2,6 +2,6 @@ services:
   it-tools:
     image: corentinth/it-tools:latest
     container_name: it-tools
-    restart: unless-stopped
+    restart: always
     ports:
       - "8880:80"  # 映射端口：宿主机8880 → 容器80
