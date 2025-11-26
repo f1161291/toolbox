@@ -1,0 +1,12 @@
+services:
+  filebrowser:
+    image: filebrowser/filebrowser    # 使用官方的 FileBrowser 镜像
+    user: "0:0"                       # 指定以 root 用户运行容器（UID=0, GID=0）
+    container_name: filebrowser       # 容器名称为 filebrowser，方便管理
+    ports:
+      - "8680:80"                     # 将宿主机的 8680 端口映射到容器的 80 端# 浏览器访问 http://宿主机IP:8680 即可使用 FileBrowser
+    volumes:
+      - /share:/srv       # 挂载数据目录，FileBrowser 的根目录，对应宿主机 ./filebrowser_data
+      - ./filebrowser_database:/database  # 挂载数据库目录，存放用户账号、配置等信息
+      - ./filebrowser_config:/config  # 挂载配置目录，存放 settings.json 等配置文件
+    restart: always                   # 设置容器自动重启策略（异常退出后自动重启）
