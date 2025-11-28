@@ -3,7 +3,6 @@ services:
     image: gdy666/lucky
     container_name: lucky
     restart: always
-    ports:
-     - "81:16601"
+    network_mode: host
     volumes:
       - /var/apps/lucky:/goodluck 
