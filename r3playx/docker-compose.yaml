@@ -1,0 +1,14 @@
+services:  
+  frontend:  
+    image: sherlockouo/xtify-music-web:latest  
+    container_name: xtify-music-web  
+    restart: unless-stopped  
+    ports:  
+      - 2222:80  
+
+  backend:  
+    image: sherlockouo/xtify-music-server:latest  
+    container_name: xtify-music-server  
+    restart: unless-stopped  
+    ports:  
+      - 35530:35530  
