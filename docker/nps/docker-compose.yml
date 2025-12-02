@@ -4,5 +4,5 @@ services:
     restart: always
     network_mode: host
     volumes:
-      - ./nps/config:/conf
+      - ./nps/conf:/conf
       - /etc/localtime:/etc/localtime
