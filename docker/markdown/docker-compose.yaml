@@ -1,7 +1,0 @@
-services:
-  markdown-editor:
-    image: nicejade/markdown-online-editor:latest
-    container_name: markdown-editor
-    ports:
-      - "8866:80"
-    restart: always
