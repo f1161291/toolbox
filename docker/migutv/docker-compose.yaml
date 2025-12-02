@@ -1,9 +1,0 @@
-ervices:
-  migu_video:
-    image: develop767/migu_video
-    container_name: migu_video
-    restart: always
-    network_mode: host
-    environment:
-      - mport=51234
-      - mhost=http://172.17.0.1:51234
