@@ -553,6 +553,7 @@ menu(){
     green "h. 3X-UI"
 	green "i. Pve-Debian"
 	green "j. Kejilion脚本"
+    green "k. warp"
 	green "x. 一键换源"
 	green "z. Docker 安装"
     red   "dd. 脚本更新"
@@ -579,6 +580,7 @@ menu(){
         h) bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)  ;;
 		i) bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)"  ;;
 		j) bash <(curl -sL kejilion.sh) ;;
+		k) https://gitlab.com/fscarmen/warp/-/raw/main/menu.sh ;;
 		x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;; 
   		z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun  ;;
 		0) bash <(curl -fsSL https://gh.130401.xyz/https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
