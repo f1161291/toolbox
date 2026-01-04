@@ -1,6 +1,6 @@
 services:
   moontv:
-    image: ghcr.io/stardm0/moontv:latest
+    image: ghcr.io/moontechlab/lunatv:latest
     container_name: moontv
     restart: always
     ports:
