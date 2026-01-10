@@ -11,17 +11,6 @@ services:
       - ALL
     volumes:
       - ./config/config.yaml:/root/.config/mihomo/config.yaml
+      - ./config/ui:/usr/share/mihomo/ui
     devices:
       - /dev/net/tun:/dev/net/tun
-
-
-  # Yacd 可视化前端UI
-  metacubexd:
-    image: ghcr.1ms.run/metacubex/metacubexd
-    container_name: metacubexd
-    restart: always
-    ports:
-    - "8080:80"
- # 和mihomo同网络，通信无阻碍
-    environment:
-      - TZ=Asia/Shanghai
