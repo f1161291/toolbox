@@ -11,6 +11,5 @@ services:
       - ALL
     volumes:
       - ./config/config.yaml:/root/.config/mihomo/config.yaml
-      - ./config/ui:/usr/share/mihomo/ui
     devices:
       - /dev/net/tun:/dev/net/tun
