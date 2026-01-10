@@ -1,18 +1,16 @@
 services:
   # mihomo (clash.meta) 核心代理服务
   mihomo:
-    image: metacubex/mihomo:latest
     container_name: mihomo
-    restart: always  # 开机自启，容器挂了自动重启
-    network_mode: "host"  # 宿主机网络模式【核心】，端口无映射问题，最稳定
+    image: docker.io/metacubex/mihomo:Alpha
+    restart: always
+    pid: "host"
+    network_mode: host
+    cap_add:
+      - ALL
     volumes:
-      # 挂载本地配置文件到容器内，必须！把你的config.yaml放到宿主机 ./config 目录下
-      - ./config:/root/.config/mihomo
-    environment:
-      - TZ=Asia/Shanghai  # 时区同步，日志时间正确
-    command:
-      - -f
-      - /root/.config/mihomo/config.yaml
+      - ./config/config.yaml:/root/.config/mihomo/config.yaml
+      - /dev/net/tun:/dev/net/tun
 
   # Yacd 可视化前端UI
   metacubexd:
