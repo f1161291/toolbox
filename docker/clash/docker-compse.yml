@@ -2,9 +2,10 @@ services:
   # mihomo (clash.meta) 核心代理服务
   mihomo:
     container_name: mihomo
-    image: docker.io/metacubex/mihomo:Alpha
+    image: metacubex/mihomo:Alpha
     restart: always
     pid: "host"
+    ipc: "host"
     network_mode: host
     cap_add:
       - ALL
@@ -14,7 +15,7 @@ services:
 
   # Yacd 可视化前端UI
   metacubexd:
-    image: dzlx/metacubexd:latest
+    image: ghcr.1ms.run/metacubex/metacubexd
     container_name: metacubexd
     restart: always
     ports:
