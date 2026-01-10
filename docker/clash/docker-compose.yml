@@ -1,5 +1,4 @@
 services:
-  # mihomo (clash.meta) 核心代理服务
   mihomo:
     container_name: mihomo
     image: metacubex/mihomo:latest
