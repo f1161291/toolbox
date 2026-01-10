@@ -11,7 +11,9 @@ services:
       - ALL
     volumes:
       - ./config/config.yaml:/root/.config/mihomo/config.yaml
+    devices:
       - /dev/net/tun:/dev/net/tun
+
 
   # Yacd 可视化前端UI
   metacubexd:
