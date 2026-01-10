@@ -16,7 +16,7 @@ services:
 
   # Yacd 可视化前端UI
   metacubexd:
-    image: mrxianyu/metacubexd-ui:latest
+    image: dzlx/metacubexd:latest
     container_name: metacubexd
     restart: always
     ports:
