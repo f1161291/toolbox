@@ -1,11 +1,11 @@
 services:
-  omnibox:
-    image: lampon/omnibox:latest
-    container_name: omnibox
-    ports:
-      - "8097:7023"
-    restart: always
-    volumes:
-      - "./data:/app/data"
+  omnibox:
+    image: lampon/omnibox:latest
+    container_name: omnibox
+    ports:
+      - "8097:7023"
+    restart: always
+    volumes:
+      - "./data:/app/data"
     environment:
       - TZ=Asia/Shanghai
