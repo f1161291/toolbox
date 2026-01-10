@@ -15,9 +15,9 @@ services:
       - /root/.config/mihomo/config.yaml
 
   # Yacd 可视化前端UI
-  yacd:
-    image: haishanh/yacd:latest
-    container_name: yacd
+  metacubexd:
+    image: mrxianyu/metacubexd-ui:latest
+    container_name: metacubexd
     restart: always
     ports:
     - "8080:80"
