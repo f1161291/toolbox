@@ -1,7 +1,9 @@
 services:
   webssh:
-    image: cmliu/webssh
-    restart: always
+    image: eooce/webssh:latest
     container_name: webssh
     ports:
-      - '222:22'
+      - "222:8888"
+    environment:
+      - PORT=222  # 可选，服务端口，默认8888
+    restart: always
