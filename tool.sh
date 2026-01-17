@@ -555,7 +555,7 @@ menu(){
 	green "j. Kejilion脚本"
     green "k. warp"
 	green "l. lxc"
-	green "m. Komari
+	green "m. Komari"
 	green "x. 一键换源"
 	green "z. Docker 安装"
     red   "dd. 脚本更新"
