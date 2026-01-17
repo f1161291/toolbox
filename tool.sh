@@ -599,3 +599,4 @@ main_menu(){
 
 # 启动主菜单
 main_menu
+EOF
