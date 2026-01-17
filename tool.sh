@@ -584,7 +584,7 @@ menu(){
 		j) bash <(curl -sL kejilion.sh) ;;
 		k) wget -N https://gitlab.com/fscarmen/warp/-/raw/main/menu.sh && bash menu.sh ;;
 		l) bash -c "$(curl -sSL https://www.linkease.com/rd/fastpve/)" ;;
-		m) curl -fsSL https://raw.githubusercontent.com/komari-monitor/komari/main/install-komari.sh -o install-komari.sh && chmod +x install-komari.sh && bash install-komari.sh  ;; 
+		m) curl -fsSL https://raw.githubusercontent.com/komari-monitor/komari/main/install-komari.sh -o install-komari.sh && chmod +x install-komari.sh && bash install-komari.sh ;;
 		x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;; 
   		z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun  ;;
 		0) bash <(curl -fsSL https://gh.130401.xyz/https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
