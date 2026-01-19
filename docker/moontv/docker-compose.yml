@@ -1,10 +1,10 @@
 services:
-  moontv:
-    image: ghcr.io/moontechlab/lunatv:latest
+  moontv-core:
+    image: ghcr.1ms.run/stardm0/moontv:latest
     container_name: moontv
     restart: always
     ports:
-      - '8096:3000'
+      - '3000:3000'
     environment:
       - USERNAME=admin
       - PASSWORD=s19194
@@ -17,7 +17,7 @@ services:
   moontv-kvrocks:
     image: apache/kvrocks
     container_name: moontv-kvrocks
-    restart: always
+    restart: unless-stopped
     volumes:
       - kvrocks-data:/var/lib/kvrocks
     networks:
