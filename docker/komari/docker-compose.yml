@@ -1,9 +1,0 @@
-services:
-  komari:
-    image: komari-monitor/komari:latest  # 对应原命令的镜像
-    container_name: komari  # 对应原命令的 --name
-    ports:
-      - "2017:25774"  # 对应原命令的 -p 端口映射
-    volumes:
-      - ./data:/app/data  # 对应原命令的 -v 数据卷挂载，$(pwd)/data 等价于 ./data
-    restart: always  # 额外添加：容器异常退出时自动重启（推荐）
