@@ -1,5 +1,5 @@
 services:
-  moontv-core:
+  moontv:
     image: ghcr.1ms.run/stardm0/moontv:latest
     container_name: moontv
     restart: always
@@ -17,7 +17,7 @@ services:
   moontv-kvrocks:
     image: apache/kvrocks
     container_name: moontv-kvrocks
-    restart: unless-stopped
+    restart: always
     volumes:
       - kvrocks-data:/var/lib/kvrocks
     networks:
