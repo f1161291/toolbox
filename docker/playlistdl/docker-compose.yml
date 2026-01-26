@@ -1,0 +1,16 @@
+services:
+  playlistdl:
+    image: tanner23456/playlistdl:v2
+    container_name: playlistdl
+    ports:
+      - "163:5000" # 冒号左侧可改
+    environment:
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=123456
+      - AUDIO_DOWNLOAD_PATH=/app/data
+      - CLEANUP_INTERVAL=300 
+      - HTTP_PROXY=192.168.0.254:20170 # 替换为你的 SOCKS5 代理地址和端口
+      - HTTPS_PROXY=192.168.0.254:20170  # 替换为你的 SOCKS5 代理地址和端口
+    volumes:
+      - /mnt/music:/app/data
+    restart: always
