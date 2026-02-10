@@ -187,7 +187,7 @@ menu(){
    	green "e. Rclone安装"
 	green "f. CasaOS 安装"
  	green "g. YAML下载"
-    green "h. 3X-UI"
+    green "h. X-UI"
 	green "i. Pve-Debian"
 	green "j. Kejilion脚本"
     green "k. warp"
@@ -215,7 +215,7 @@ menu(){
 	    e) curl https://rclone.org/install.sh | sudo bash ;;
         f) wget -qO- https://get.casaos.io | sudo bash ;;
 		g) rm -rf toolbox && git clone https://gh.130401.xyz/https://github.com/f1161291/toolbox  && cd toolbox && chmod +x tool.sh  && bash tool.sh ;;
-        h) bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)  ;;
+        h) bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh)  ;;
 		i) bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)"  ;;
 		j) bash <(curl -sL kejilion.sh) ;;
 		k) wget -N https://gitlab.com/fscarmen/warp/-/raw/main/menu.sh && bash menu.sh ;;
