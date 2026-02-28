@@ -1,0 +1,13 @@
+services:
+  x-ui:
+    image: enwaiax/x-ui  # 容器使用的镜像，与原命令一致
+    container_name: x-ui  # 容器名称，与原命令一致
+    restart: always  # 重启策略，容器退出时总是重启，与原命令一致
+    network_mode: host  # 使用主机网络模式，与 --network host 一致
+    volumes:
+      # 数据卷挂载，对应原命令中的 -v 参数
+      - /root/docker/xui/db/:/etc/x-ui
+      - /root/docker/xui/cert/:/root/cert/
+    stdin_open: true  # 对应 -i 参数，保持标准输入打开
+    tty: true         # 对应 -t 参数，分配伪终端
+    detach: true      # 对应 -d 参数，后台运行容器
