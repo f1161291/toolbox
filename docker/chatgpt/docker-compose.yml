@@ -1,0 +1,15 @@
+services:
+  chatgpt-next-web:
+    image: yidadaa/chatgpt-next-web  # 使用的镜像名称
+    container_name: chatgpt-next-web  # 自定义容器名称，方便管理
+    restart: always  # 总是重启容器（对应 --restart always）
+    ports:
+      - "3003:3000"  # 端口映射（对应 -p 3003:3000）
+    environment:
+      # 环境变量配置（对应 -e 参数）
+      - OPENAI_API_KEY=sk-
+      - CODE=
+      - BASE_URL=
+    # 可选：如果需要持久化数据，可添加 volumes 映射（根据实际需求）
+    # volumes:
+    #   - ./chatgpt-next-web-data:/app/data
