@@ -1,6 +1,6 @@
 services:
   qwrt:
-    image: coolsnowwolf/qwrt:arm64-latest
+    image: f1161291/n1-kwrt:latest
     container_name: qwrt
     privileged: true
     command: /sbin/init
