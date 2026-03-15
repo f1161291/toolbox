@@ -1,0 +1,9 @@
+services:
+  migpt:
+    image: idootop/migpt-next:latest
+    container_name: migpt
+    stdin_open: true  # 相当于 -i
+    tty: true        # 相当于 -t
+    volumes:
+      - ./config.js:/app/config.js
+    restart: always    # 相当于 --rm（容器退出后不会自动重启，但也不会自动删除）
