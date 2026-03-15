@@ -1,0 +1,19 @@
+services:
+  qwrt:
+    image: coolsnowwolf/qwrt:arm64-latest
+    container_name: qwrt
+    privileged: true
+    command: /sbin/init
+    networks:
+      - qwrt_macnet
+        
+networks:
+  qwrt_macnet:
+    name: qwrt_macnet
+    driver: macvlan
+    driver_opts:
+      parent: enp0s1 # 这里替换为你设备的网卡名称（比如eth0、end0、enp1s0、enp1s0-ovs等）
+    ipam:
+      config:
+        - subnet: 192.168.3.0/24 # 这里换成你的NAS所在的网段(比如192.168.100.0/24)
+          gateway: 192.168.3.1
