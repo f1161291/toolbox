@@ -180,18 +180,19 @@ menu(){
 	green "9. 青龙面板"
 	green "10. TCP调优"
 	green "0. 极光面板"
-	green "a. S-UI"
+	green "a. S-UI面板"
   	green "b. tailscale"
  	green "c. aria2 安装"
  	green "d. cd2 安装"
    	green "e. Rclone安装"
 	green "f. CasaOS 安装"
  	green "g. YAML下载"
-    green "h. X-UI"
+    green "h. X-UI面板"
 	green "i. Pve-Debian"
 	green "j. Kejilion脚本"
-    green "k. warp"
-	green "l. lxc"
+    green "k. warp加速"
+	green "l. lxc容器"
+	green "n. 1panel面板"
 	green "x. 一键换源"
 	green "z. Docker 安装"
     red   "dd. 脚本更新"
@@ -220,6 +221,7 @@ menu(){
 		j) bash <(curl -sL kejilion.sh) ;;
 		k) wget -N https://gitlab.com/fscarmen/warp/-/raw/main/menu.sh && bash menu.sh ;;
 		l) bash -c "$(curl -sSL https://www.linkease.com/rd/fastpve/)" ;;
+        n) bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)" ;;
 		x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;; 
   		z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun  ;;
 		0) bash <(curl -fsSL https://gh.130401.xyz/https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
