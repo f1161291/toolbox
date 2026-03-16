@@ -1,0 +1,9 @@
+services:
+  coco-downloader:
+    image: markcxx/coco-downloader:latest
+    container_name: music
+    ports:
+      - "8080:3000"
+    environment:
+      - PORT=3000
+    restart: always
