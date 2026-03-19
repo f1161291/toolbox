@@ -1,0 +1,9 @@
+services:
+  stream-vault:
+    image: qingfeng2336/stream-vault
+    ports:
+      - "28083:28081"
+    volumes:
+      - /app:/app
+      - /tmp:/tmp
+    restart: always
