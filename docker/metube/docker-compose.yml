@@ -1,9 +1,15 @@
 services:
   metube:
-    image: ghcr.io/alexta69/metube
+    image: alexta69/metube
     container_name: metube
-    restart: unless-stopped
+    restart: always
     ports:
       - "8081:8081"
     volumes:
       - /mnt/share/downloads:/downloads
+      - /vol1/1000/Docker/metube:/cookies
+    environment:
+      - HTTP_PROXY=socks5://192.168.3.2:7891
+      - HTTPS_PROXY=socks5://192.168.3.2:7891
+      - YTDL_OPTIONS={"cookiefile":"/cookies/cookies.txt"}
+      
