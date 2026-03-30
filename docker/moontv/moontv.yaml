@@ -1,6 +1,6 @@
 services:
   moontv:
-    image: mtvpls/moontvplus:latest
+    image: mtvpls/moontvplus-lite:latest
     container_name: moontv
     restart: always
     ports:
