@@ -1,0 +1,15 @@
+services:
+  jellyfin:
+    image: linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./jellyfin/library:/config
+      - ./jellyfin/tvseries:/data/tvshows
+      - /mnt/share:/data/movies
+    ports:
+      - 8096:8096
+    restart: always
