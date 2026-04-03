@@ -1,0 +1,10 @@
+services:
+  cloudreve:
+    image: cloudreve/cloudreve:latest
+    container_name: cloudreve
+    restart: always
+    ports:
+      - "80:5212"
+    volumes:
+      - ./data:cloudrve:data
+      - /mnt/share:/mnt/storage
