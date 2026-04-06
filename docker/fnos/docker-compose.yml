@@ -1,0 +1,12 @@
+services:
+  trim-media:
+    image: trimmedia:latest
+    container_name: trimmedia
+    restart: always
+    devices:
+      - "/dev/dri:/dev/dri"
+    ports:
+      - "8005:8005"
+    volumes:
+      - "/volume1/docker/trimmedia/video:/vol1/1000/media"
+      - "/volume1/docker/trimmedia/mediadata:/vol1/mediadata"
