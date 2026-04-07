@@ -7,7 +7,7 @@ services:
       - '8096:3000'
     environment:
       - USERNAME=admin
-      - PASSWORD=s19194
+      - PASSWORD=    #修改后再部署
       - NEXT_PUBLIC_STORAGE_TYPE=kvrocks
       - KVROCKS_URL=redis://moontv-kvrocks:6666
     networks:
