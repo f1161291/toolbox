@@ -1,0 +1,10 @@
+services:
+  app:
+    image: magiccode1412/magicpush:latest              # 国外网络使用此镜像
+    ports:
+      - "3600:3000"
+    volumes:
+      - ./data:/app/server/data
+    network_mode: bridge
+    container_name: magicpush
+    restart: always
