@@ -1,6 +1,6 @@
 services:
   donggua-tv:
-    image: ednovas/dongguatv:latest
+    image: ghcr.io/ednovas/dongguatv:latest
     container_name: donggua-tv
     ports:
       - "3000:3000"
