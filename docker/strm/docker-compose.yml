@@ -1,0 +1,25 @@
+services:
+  smartstrm:
+    image: cp0204/smartstrm:latest
+    container_name: smartstrm
+    restart: always
+    network_mode: host
+    volumes:
+      - ./config:/app/config # 配置目录
+      - ./logs:/app/logs # 日志目录，可选
+      - /mnt/metube/strm:/strm # STRM 生成目录
+    environment:
+      - PORT=8025 # 管理端口，可选
+      - ADMIN_USERNAME=admin # 管理用户名
+      - ADMIN_PASSWORD=123 # 管理用户密码
+      - LICENSE= # 许可证字符串（如有）
+
+  cloudsaver:
+    image: jiangrui1994/cloudsaver:latest
+    container_name: cloud-saver
+    ports:
+      - "8088:8008"
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    restart: always
