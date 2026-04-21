@@ -1,0 +1,16 @@
+services:
+  donggua-tv:
+    image: ednovas/dongguatv:latest
+    container_name: donggua-tv
+    ports:
+      - "3000:3000"
+    environment:
+      - TMDB_API_KEY=your_api_key_here
+#      - TMDB_PROXY_URL=https://tmdb-proxy.your-name.workers.dev
+#      - CORS_PROXY_URL=https://cors-proxy.your-name.workers.dev
+      - ACCESS_PASSWORD=123
+#      - REMOTE_DB_URL=https://example.com/db.json
+    volumes:
+      - ./db.json:/app/db.json
+      - ./cache.db:/app/cache.db
+    restart: always
