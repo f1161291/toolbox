@@ -1,0 +1,36 @@
+# 更多信息请访问：https://github.com/pi-hole/docker-pi-hole/ 和 https://docs.pi-hole.net/
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      # DNS 端口 - 已修改为 54
+      - "54:53/tcp"
+      - "54:53/udp"
+      # 默认 HTTP 端口 - 已修改为 81
+      - "81:80/tcp"
+      # 默认 HTTPS 端口 - 已修改为 4443
+      - "4443:443/tcp"
+      # 如果你使用 Pi-hole 作为 DHCP 服务器，请取消下面这行的注释
+      #- "67:67/udp"
+      # 如果你使用 Pi-hole 作为 NTP 服务器，请取消下面这行的注释
+      #- "123:123/udp"
+    environment:
+      # 设置适合你所在位置的时区
+      TZ: 'Asia/Shanghai'
+      # 设置访问 Web 界面的密码。请务必修改！
+      FTLCONF_webserver_api_password: '123'
+      # 如果使用 Docker 默认的 `bridge` 网络，DNS 监听模式应设置为 'ALL'
+      FTLCONF_dns_listeningMode: 'ALL'
+    # 卷用于在容器升级之间持久化存储你的数据
+    volumes:
+      # 用于持久化 Pi-hole 的数据库和通用配置文件
+      - './etc-pihole:/etc/pihole'
+      # 如果你有想要持久化的自定义 dnsmasq 配置文件，请取消下面的注释。
+      #- './etc-dnsmasq.d:/etc/dnsmasq.d'
+    cap_add:
+      # 参见 https://docs.pi-hole.net/docker/#note-on-capabilities
+      - NET_ADMIN
+      - SYS_TIME
+      - SYS_NICE
+    restart: unless-stopped
