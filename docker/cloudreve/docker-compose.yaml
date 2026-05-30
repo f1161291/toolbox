@@ -4,7 +4,7 @@ services:
     container_name: cloudreve
     restart: always
     ports:
-      - "80:5212"
+      - "5212:5212"
     volumes:
       - ./data:cloudrve:data
       - /mnt/share:/mnt/storage
