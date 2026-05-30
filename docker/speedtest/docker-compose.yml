@@ -1,7 +1,0 @@
-services:
-  speedtest:
-    image: 'badapple9/speedtest-x'
-    restart: always
-    container_name: speedtest
-    ports:
-      - '23456:80'
