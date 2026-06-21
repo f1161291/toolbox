@@ -1,0 +1,11 @@
+services:
+  daed:
+    image: ghcr.io/daeuniverse/daed
+    container_name: daed
+    privileged: true
+    network_mode: host
+    pid: host
+    restart: always
+    volumes:
+      - /sys:/sys
+      - /etc/daed:/etc/daed
