@@ -193,6 +193,7 @@ menu(){
     green "k. warp加速"
 	green "l. lxc容器"
 	green "n. 1panel面板"
+	green "m. milivpn"
 	green "x. 一键换源"
 	green "z. Docker 安装"
     red   "dd. 脚本更新"
@@ -222,6 +223,7 @@ menu(){
 		k) wget -N https://gitlab.com/fscarmen/warp/-/raw/main/menu.sh && bash menu.sh ;;
 		l) bash -c "$(curl -sSL https://www.linkease.com/rd/fastpve/)" ;;
         n) bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)" ;;
+		m) bash <(curl -Ls https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh) ;;
 		x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;; 
   		z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun  ;;
 		0) bash <(curl -fsSL https://gh.130401.xyz/https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
