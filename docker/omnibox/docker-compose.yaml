@@ -1,11 +1,48 @@
 services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:16-alpine
+    container_name: omnibox-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=omnibox123
+      - POSTGRES_DB=omnibox
+      - TZ=Asia/Shanghai
+    ports:
+      - "5432:5432"  # 可选：如需外部访问可取消注释
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Omnibox 服务
   omnibox:
     image: lampon/omnibox:latest
     container_name: omnibox
-    ports:
-      - "8097:7023"
     restart: always
+    ports:
+      - "8096:7023"
     volumes:
-      - "./data:/app/data"
+      - omnibox-data:/app/data
     environment:
-      - TZ=Asia/Shanghai
+      - DATABASE_TYPE=postgres
+      - DATABASE_HOST=postgres  # 使用服务名连接
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=omnibox123
+      - DATABASE_DATABASE=omnibox
+    depends_on:
+      postgres:
+        condition: service_healthy
+    links:
+      - postgres
+
+volumes:
+  postgres-data:
+    name: omnibox-postgres-data
+  omnibox-data:
+    name: omnibox-data
