@@ -180,7 +180,7 @@ menu(){
 	green "9. 青龙面板"
 	green "10. TCP调优"
 	green "0. 极光面板"
-	green "a. S-UI面板"
+	green "a. 3X-UI面板"
   	green "b. tailscale"
  	green "c. aria2 安装"
  	green "d. cd2 安装"
@@ -210,7 +210,7 @@ menu(){
 		8) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/Oracle-server-keep-alive-script/-/raw/main/oalive.sh) ;;
 		9) wget -q https://gh.130401.xyz/https://raw.githubusercontent.com/yanyuwangluo/VIP/main/Scripts/sh/ql.sh -O ql.sh && bash ql.sh ;;
 		10) tcp_up ;; 
-        a) bash <(curl -Ls https://raw.githubusercontent.com/alireza0/s-ui/master/install.sh) ;;
+        a) bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) ;;
 		b) curl -fsSL https://tailscale.com/install.sh | sh ;; 
 		c) wget -N git.io/aria2.sh && chmod +x aria2.sh && bash aria2.sh ;;       
   		d) bash <(curl -sSLf https://ailg.ggbond.org/cd2.sh) ;;
