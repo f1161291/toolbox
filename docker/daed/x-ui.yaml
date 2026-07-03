@@ -1,0 +1,9 @@
+services:
+  x-ui:
+    image: enwaiax/x-ui
+    container_name: x-ui
+    restart: always
+    network_mode: host
+    volumes:
+      - ./db/:/etc/x-ui
+      - ./cert/:/root/cert/
