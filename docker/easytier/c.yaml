@@ -1,0 +1,27 @@
+services:
+  easytier:
+    image: m.daocloud.io/docker.io/easytier/easytier:latest
+    container_name: easytier
+    hostname: easytier
+    restart: always
+    network_mode: host
+
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+
+    devices:
+      - /dev/net/tun:/dev/net/tun
+
+    environment:
+      TZ: Asia/Shanghai
+
+    volumes:
+      - /etc/easytier:/root
+      - /etc/machine-id:/etc/machine-id:ro
+
+    command: >
+      -d
+      --network-name <用户>
+      --network-secret <密码>
+      -p tcp://public.easytier.cn:11010
