@@ -12,7 +12,7 @@ services:
 
     working_dir: /root
     volumes:
-      -./conf/cache:/root
+      - ./conf/cache:/root
 
     entrypoint:
       - /sbin/tini
