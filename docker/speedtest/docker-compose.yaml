@@ -1,0 +1,7 @@
+services:
+  librespeed:
+    image: linuxserver/librespeed
+    container_name: librespeed
+    restart: always
+    ports:
+      - "1234:80"
