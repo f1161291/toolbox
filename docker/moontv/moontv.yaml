@@ -4,7 +4,7 @@ services:
     container_name: moontv-core
     restart: always
     ports:
-      - '3000:3000'
+      - '8097:3000'
     environment:
       - USERNAME=admin
       - PASSWORD=123
