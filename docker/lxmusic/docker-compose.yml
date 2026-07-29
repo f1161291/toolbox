@@ -1,0 +1,19 @@
+services:
+  lx-sync-server:
+    image: xcq0607/lxserver:latest
+    container_name: lx-sync-server
+    restart: always
+    ports:
+      - "163:9527"
+    volumes:
+      - ./data:/server/data
+      - ./logs:/server/logs
+      - ./cache:/server/cache
+      - ./music:/server/music
+    environment:
+      - NODE_ENV=production
+      # - FRONTEND_PASSWORD=123456
+      # - ENABLE_WEBPLAYER_AUTH=true
+      # - WEBPLAYER_PASSWORD=yourpassword
+      # - ADMIN_PATH=
+      # - PLAYER_PATH=/music
