@@ -1,0 +1,18 @@
+services:
+  fqnovel:
+    image: lampon/fqnovel:latest
+    container_name: fqnovel
+    restart: always
+    ports:
+      - "9999:9999"
+      - "8800:8800"
+    volumes:
+      - ./fqnovel-decrypted:/app/decrypted
+    environment:
+      - TZ=Asia/Shanghai
+      - DECRYPTED_TTL=300
+
+volumes:
+  fqnovel-decrypted:
+    name: fqnovel-decrypted
+    external: false
