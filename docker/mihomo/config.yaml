@@ -1,35 +1,31 @@
-port: 7890 # HTTP(S) 代理服务器端口
-socks-port: 7891 # SOCKS5 代理端口
-mixed-port: 7893 # HTTP(S) 和 SOCKS 代理混合端口
-allow-lan: true # 允许局域网连接
-bind-address: "*" # 绑定 IP 地址，仅作用于 allow-lan 为 true，'*'表示所有地址
+port: 7890 
+socks-port: 7891 
+mixed-port: 7893 
+allow-lan: true 
+bind-address: "*" 
 find-process-mode: strict
 mode: rule
-#自定义 geodata url
 geox-url:
   geoip: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
   geosite: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
   mmdb: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb"
-geo-auto-update: true # 是否自动更新 geodata
-geo-update-interval: 24 # 更新间隔，单位：小时
-log-level: debug # 日志等级 silent/error/warning/info/debug
-ipv6: flase # 开启 IPv6 总开关，关闭阻断所有 IPv6 链接和屏蔽 DNS 请求 AAAA 记录
-external-controller: 0.0.0.0:9090 # RESTful API 监听地址
-tcp-concurrent: true # TCP 并发连接所有 IP, 将使用最快握手的 TCP
+geo-auto-update: true
+geo-update-interval: 24 
+log-level: debug 
+ipv6: flase 
+external-controller: 0.0.0.0:9090 
+tcp-concurrent: true 
 external-ui: ./ui/
-external-ui-name: xd
 external-ui-url: "https://gh.130401.xyz/https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip"
 external-doh-server: /dns-query
-# interface-name: en0 # 设置出口网卡
-
 tun:
   enable: true
   stack: system # gvisor/mixed
-  dns-hijack:
-    - 0.0.0.0:53 # 需要劫持的 DNS
+  #dns-hijack:
+  #  - 0.0.0.0:53 # 需要劫持的 DNS
   auto-redirect: false # 自动配置 iptables 以重定向 TCP 连接。仅支持 Linux。带有 auto-redirect 的 auto-route 现在可以在路由器上按预期工作，无需干预。
 
-tunnels: # one line config
+tunnels:
   - tcp/udp,127.0.0.1:6553,114.114.114.114:53,proxy
   - tcp,127.0.0.1:6666,rds.mysql.com:3306,vpn
   # full yaml config
