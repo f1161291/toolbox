@@ -194,9 +194,10 @@ menu(){
 	green "l. lxc容器"
 	green "n. 1panel面板"
 	green "m. milivpn"
+	green "u. 脚本更新"
 	green "x. 一键换源"
 	green "z. Docker 安装"
-    red   "dd. 脚本更新"
+    red   "dd. DD系统"
 	echo "         "
 	read -p "请输入数字:" NumberInput
 	case "$NumberInput" in
@@ -224,11 +225,12 @@ menu(){
 		l) bash -c "$(curl -sSL https://www.linkease.com/rd/fastpve/)" ;;
         n) bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)" ;;
 		m) bash <(curl -Ls https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh) ;;
+		u) wget -N --no-check-certificate https://gh.130401.xyz/https://raw.githubusercontent.com/f1161291/toolbox/main/tool.sh && chmod +x tool.sh && bash tool.sh ;;
 		x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;; 
   		z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun  ;;
 		0) bash <(curl -fsSL https://gh.130401.xyz/https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
-        dd) wget -N --no-check-certificate https://gh.130401.xyz/https://raw.githubusercontent.com/f1161291/toolbox/main/tool.sh && chmod +x tool.sh && bash tool.sh ;;
-              
+		dd) curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh || wget -O ${_##*/} $_ ;;
+       
 	esac
 }
 menu
