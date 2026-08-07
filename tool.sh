@@ -229,7 +229,7 @@ menu(){
 		x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;; 
   		z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun  ;;
 		0) bash <(curl -fsSL https://gh.130401.xyz/https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
-		dd) curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh || wget -O ${_##*/} $_ ;;
+		dd) curl -O https://raw.githubusercontent.com/f1161291/other/refs/heads/main/dd.sh && chmod +x dd.sh && bash dd.sh ;;
        
 	esac
 }
