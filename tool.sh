@@ -222,14 +222,13 @@ ${RED}==================================
                            
 ${GREEN} 1. root/SSH登录/改密码/端口
 ${GREEN} 2. 开启端口/禁用防火墙
-${GREEN} 3. Oracle DD系统
+${GREEN} 3. TCP/BBR优化
 ${GREEN} 4. 安装Hysteria2
 ${GREEN} 5. 安装Alist
 ${GREEN} 6. 安装x-ui
 ${GREEN} 7. 自动SSL证书
 ${GREEN} 8. 性能测试
 ${GREEN} 9. 青龙面板
-${GREEN}10. TCP/BBR优化
 ${GREEN} a. 3X-UI面板
 ${GREEN} b. BBR3加速
 ${GREEN} c. aria2安装
@@ -254,14 +253,13 @@ EOF
     case "$choice" in
         1) root_user ;;
         2) open_ports ;;
-        3) bash <(wget -qO- 'https://raw.githubusercontent.com/MoeClub/Note/master/InstallNET.sh') -d 11 -v 64 -p 123456789 ;;
+        3) tcp_bbr_optimize ;;
         4) run_script "https://raw.githubusercontent.com/Misaka-blog/hysteria-install/main/hy2/hysteria.sh" "hysteria.sh" ;;
         5) curl -fsSL https://res.oplist.org/script/v4.sh | sudo bash ;;
         6) bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh) ;;
         7) apt update -y && apt upgrade -y && apt install git -y && bash <(curl -fsSL https://raw.githubusercontent.com/slobys/SSL-Renewal/main/acme.sh) ;;
         8) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/Oracle-server-keep-alive-script/-/raw/main/oalive.sh) ;;
         9) run_script "https://raw.githubusercontent.com/yanyuwangluo/VIP/main/Scripts/sh/ql.sh" "ql.sh" ;;
-        10) tcp_bbr_optimize ;;
         a) bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) ;;
         b) bash <(curl -fsSL https://raw.githubusercontent.com/byJoey/Actions-bbr-v3/main/install.sh) ;;
         c) run_script "https://git.io/aria2.sh" "aria2.sh" ;;
