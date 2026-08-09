@@ -246,7 +246,7 @@ menu() {
         3) tcp_bbr_optimize ;;
         5) curl -fsSL https://res.oplist.org/script/v4.sh | sudo bash ;;
         6) bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh) ;;
-        7) apt update -y && apt upgrade -y && apt install git -y && bash <(curl -fsSL https://raw.githubusercontent.com/slobys/SSL-Renewal/main/acme.sh) ;;
+        7) apt install git -y && bash <(curl -fsSL https://raw.githubusercontent.com/slobys/SSL-Renewal/main/acme.sh) ;;
         8) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/Oracle-server-keep-alive-script/-/raw/main/oalive.sh) ;;
         a) bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) ;;
         b) bash <(curl -fsSL https://raw.githubusercontent.com/byJoey/Actions-bbr-v3/main/install.sh) ;;
