@@ -209,41 +209,39 @@ run_script() {
 # ==================== 菜单 ====================
 menu() {
     clear
-    cat << EOF
-${RED}==================================
-${GREEN}          cc tool              
-${RED}        cc Linux一键运行脚本    
-                           
-${RED}==================================
-                           
-${GREEN} 1. root/SSH登录/改密码/端口
-${GREEN} 2. 开启端口/禁用防火墙
-${GREEN} 3. TCP/BBR优化
-${GREEN} 4. 安装Hysteria2
-${GREEN} 5. 安装Alist
-${GREEN} 6. 安装x-ui
-${GREEN} 7. 自动SSL证书
-${GREEN} 8. 性能测试
-${GREEN} 9. 青龙面板
-${GREEN} a. 3X-UI面板
-${GREEN} b. BBR3加速
-${GREEN} c. aria2安装
-${GREEN} d. CD2安装
-${GREEN} e. Rclone安装
-${GREEN} f. CasaOS安装
-${GREEN} g. YAML下载
-${GREEN} i. Pve-Debian
-${GREEN} j. Kejilion脚本
-${GREEN} k. Warp加速
-${GREEN} l. LXC容器
-${GREEN} n. 1Panel面板
-${GREEN} m. Milivpn
-${GREEN} u. 脚本更新
-${GREEN} x. 一键换源
-${GREEN} z. Docker安装
-${RED}dd. DD系统
-${PLAIN}
-EOF
+    echo -e "${RED}=================================="
+    echo -e "${GREEN}          cc tool              "
+    echo -e "${RED}        cc Linux一键运行脚本    "
+    echo -e "                                   "
+    echo -e "${RED}=================================="
+    echo -e "                                   "
+    echo -e "${GREEN} 1. root/SSH登录/改密码/端口"
+    echo -e "${GREEN} 2. 开启端口/禁用防火墙"
+    echo -e "${GREEN} 3. TCP/BBR优化"
+    echo -e "${GREEN} 4. 安装Hysteria2"
+    echo -e "${GREEN} 5. 安装Alist"
+    echo -e "${GREEN} 6. 安装x-ui"
+    echo -e "${GREEN} 7. 自动SSL证书"
+    echo -e "${GREEN} 8. 性能测试"
+    echo -e "${GREEN} 9. 青龙面板"
+    echo -e "${GREEN} a. 3X-UI面板"
+    echo -e "${GREEN} b. BBR3加速"
+    echo -e "${GREEN} c. aria2安装"
+    echo -e "${GREEN} d. CD2安装"
+    echo -e "${GREEN} e. Rclone安装"
+    echo -e "${GREEN} f. CasaOS安装"
+    echo -e "${GREEN} g. YAML下载"
+    echo -e "${GREEN} i. Pve-Debian"
+    echo -e "${GREEN} j. Kejilion脚本"
+    echo -e "${GREEN} k. Warp加速"
+    echo -e "${GREEN} l. LXC容器"
+    echo -e "${GREEN} n. 1Panel面板"
+    echo -e "${GREEN} m. Milivpn"
+    echo -e "${GREEN} u. 脚本更新"
+    echo -e "${GREEN} x. 一键换源"
+    echo -e "${GREEN} z. Docker安装"
+    echo -e "${RED}dd. DD系统"
+    echo -e "${PLAIN}"
     
     read -p "请输入选项: " choice
     case "$choice" in
