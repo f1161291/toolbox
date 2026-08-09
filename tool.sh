@@ -235,7 +235,7 @@ menu() {
     echo -e "${GREEN} m. Milivpn"
     echo -e "${GREEN} u. 脚本更新"
     echo -e "${GREEN} x. 一键换源"
-    echo -e "${GREEN} z. Docker安装"
+    echo -e "${GREEN} z. Docker"
     echo -e "${RED}dd. DD系统"
     echo -e "${PLAIN}"
     
