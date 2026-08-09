@@ -218,22 +218,18 @@ menu() {
     echo -e "${GREEN} 1. root/SSH登录/改密码/端口"
     echo -e "${GREEN} 2. 开启端口/禁用防火墙"
     echo -e "${GREEN} 3. TCP/BBR优化"
-    echo -e "${GREEN} 4. 安装Hysteria2"
     echo -e "${GREEN} 5. 安装Alist"
     echo -e "${GREEN} 6. 安装x-ui"
     echo -e "${GREEN} 7. 自动SSL证书"
     echo -e "${GREEN} 8. 性能测试"
-    echo -e "${GREEN} 9. 青龙面板"
     echo -e "${GREEN} a. 3X-UI面板"
     echo -e "${GREEN} b. BBR3加速"
     echo -e "${GREEN} c. aria2安装"
     echo -e "${GREEN} d. CD2安装"
-    echo -e "${GREEN} e. Rclone安装"
-    echo -e "${GREEN} f. CasaOS安装"
+    echo -e "${GREEN} e. Rclone"    
     echo -e "${GREEN} g. YAML下载"
     echo -e "${GREEN} i. Pve-Debian"
     echo -e "${GREEN} j. Kejilion脚本"
-    echo -e "${GREEN} k. Warp加速"
     echo -e "${GREEN} l. LXC容器"
     echo -e "${GREEN} n. 1Panel面板"
     echo -e "${GREEN} m. Milivpn"
@@ -248,22 +244,18 @@ menu() {
         1) root_user ;;
         2) open_ports ;;
         3) tcp_bbr_optimize ;;
-        4) run_script "https://raw.githubusercontent.com/Misaka-blog/hysteria-install/main/hy2/hysteria.sh" "hysteria.sh" ;;
         5) curl -fsSL https://res.oplist.org/script/v4.sh | sudo bash ;;
         6) bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh) ;;
         7) apt update -y && apt upgrade -y && apt install git -y && bash <(curl -fsSL https://raw.githubusercontent.com/slobys/SSL-Renewal/main/acme.sh) ;;
         8) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/Oracle-server-keep-alive-script/-/raw/main/oalive.sh) ;;
-        9) run_script "https://raw.githubusercontent.com/yanyuwangluo/VIP/main/Scripts/sh/ql.sh" "ql.sh" ;;
         a) bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) ;;
         b) bash <(curl -fsSL https://raw.githubusercontent.com/byJoey/Actions-bbr-v3/main/install.sh) ;;
         c) run_script "https://git.io/aria2.sh" "aria2.sh" ;;
         d) bash <(curl -sSLf https://ailg.ggbond.org/cd2.sh) ;;
         e) curl https://rclone.org/install.sh | sudo bash ;;
-        f) wget -qO- https://get.casaos.io | sudo bash ;;
         g) rm -rf toolbox && git clone https://gh-proxy.cn/https://github.com/f1161291/toolbox && cd toolbox && chmod +x tool.sh && bash tool.sh ;;
         i) bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)" ;;
         j) bash <(curl -sL kejilion.sh) ;;
-        k) run_script "https://gitlab.com/fscarmen/warp/-/raw/main/menu.sh" "warp.sh" ;;
         l) bash -c "$(curl -sSL https://www.linkease.com/rd/fastpve/)" ;;
         n) bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)" ;;
         m) bash <(curl -Ls https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh) ;;
