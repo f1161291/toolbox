@@ -9,7 +9,7 @@ services:
       - /mnt/share/downloads:/downloads
       - /vol1/1000/Docker/metube:/cookies
     environment:
-      - HTTP_PROXY=socks5://192.168.0.76:7891
-      - HTTPS_PROXY=socks5://192.168.0.76:7891
+      - HTTP_PROXY=socks5://192.168.0.76:7893
+      - HTTPS_PROXY=socks5://192.168.0.76:7893
       - YTDL_OPTIONS={"cookiefile":"/cookies/cookies.txt"}
       
