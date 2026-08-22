@@ -1,0 +1,20 @@
+services:
+  iventoy:
+    image: szabis/iventoy:latest
+    network_mode: "host"
+    container_name: iventoy
+    restart: always
+    privileged: true #must be true
+    environment:
+      - AUTO_START_PXE=true
+    ports:
+      - "67:67/udp" # DHCP Server
+      - "69:69/udp" # TFTP Server
+      - "10809:10809" # NBD Server (NBD)
+      - "16000:16000" # PXE Service HTTP Server (iVentoy PXE Service)
+      - "26000:26000" # PXE GUI HTTP Server (iVentoy GUI)
+    volumes:
+      - ./data:/opt/iventoy/data
+      - ./iso:/opt/iventoy/iso
+      - ./log:/opt/iventoy/log
+      - ./user:/opt/iventoy/user
