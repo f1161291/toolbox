@@ -233,6 +233,7 @@ menu() {
     echo -e "${GREEN} l. LXC容器"
     echo -e "${GREEN} n. 1Panel面板"
     echo -e "${GREEN} m. Milivpn"
+    echo -e "${GREEN} h. Mihomo"
     echo -e "${GREEN} u. 脚本更新"
     echo -e "${GREEN} x. 一键换源"
     echo -e "${GREEN} z. Docker"
@@ -261,6 +262,7 @@ menu() {
         m) bash <(curl -Ls https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh) ;;
         u) run_script "https://gh-proxy.cn/https://raw.githubusercontent.com/f1161291/toolbox/main/tool.sh" "tool.sh" && bash tool.sh ;;
         x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;;
+        h) apt install unzip -y && git clone --branch master --depth 1 https://gh-proxy.org/https://github.com/nelvko/clash-for-linux-install.git && cd clash-for-linux-install && bash install.sh ;;
         z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun ;;
         0) bash <(curl -fsSL https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
         dd) run_script "https://raw.githubusercontent.com/f1161291/other/refs/heads/main/dd.sh" "dd.sh" && bash dd.sh ;;
