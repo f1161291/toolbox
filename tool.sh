@@ -229,7 +229,7 @@ menu() {
     echo -e "${GREEN} e. Rclone"    
     echo -e "${GREEN} g. YAML下载"
     echo -e "${GREEN} i. Pve-Debian"
-    echo -e "${GREEN} j. Docker+Github"
+    echo -e "${GREEN} j. Docker加速"
     echo -e "${GREEN} l. LXC容器"
     echo -e "${GREEN} n. 1Panel面板"
     echo -e "${GREEN} m. Milivpn"
