@@ -229,7 +229,7 @@ menu() {
     echo -e "${GREEN} e. Rclone"    
     echo -e "${GREEN} g. YAML下载"
     echo -e "${GREEN} i. Pve-Debian"
-    echo -e "${GREEN} j. Kejilion脚本"
+    echo -e "${GREEN} j. Docker+Github"
     echo -e "${GREEN} l. LXC容器"
     echo -e "${GREEN} n. 1Panel面板"
     echo -e "${GREEN} m. Milivpn"
@@ -256,7 +256,7 @@ menu() {
         e) curl https://rclone.org/install.sh | sudo bash ;;
         g) rm -rf toolbox && git clone https://gh-proxy.cn/https://github.com/f1161291/toolbox && cd toolbox && chmod +x tool.sh && bash tool.sh ;;
         i) bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)" ;;
-        j) bash <(curl -sL kejilion.sh) ;;
+        j) curl -fsSL https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh | sh ;;
         l) bash -c "$(curl -sSL https://www.linkease.com/rd/fastpve/)" ;;
         n) bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)" ;;
         m) bash <(curl -Ls https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh) ;;
