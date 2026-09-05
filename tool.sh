@@ -255,7 +255,7 @@ menu() {
         d) bash <(curl -sSLf https://ailg.ggbond.org/cd2.sh) ;;
         e) curl https://rclone.org/install.sh | sudo bash ;;
         g) rm -rf toolbox && git clone https://gh-proxy.cn/https://github.com/f1161291/toolbox && cd toolbox && chmod +x tool.sh && bash tool.sh ;;
-        i) bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)" ;;
+        i) bash -c "$(curl -fsSL https://js.xiray.cc.cd/https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)" ;;
         j) curl -fsSL https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh | sh ;;
         l) bash -c "$(curl -sSL https://www.linkease.com/rd/fastpve/)" ;;
         n) bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)" ;;
