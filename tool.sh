@@ -215,8 +215,8 @@ menu() {
     echo -e "                                   "
     echo -e "${RED}=================================="
     echo -e "                                   "
-    echo -e "${GREEN} 1. root/SSH登录/改密码/端口"
-    echo -e "${GREEN} 2. 开启端口/禁用防火墙"
+    echo -e "${GREEN} 1. root/SSH修改"
+    echo -e "${GREEN} 2. 禁用防火墙"
     echo -e "${GREEN} 3. TCP/BBR优化"
     echo -e "${GREEN} 5. 安装Alist"
     echo -e "${GREEN} 6. 安装x-ui"
@@ -262,7 +262,7 @@ menu() {
         m) bash <(curl -Ls https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh) ;;
         u) run_script "https://gh-proxy.cn/https://raw.githubusercontent.com/f1161291/toolbox/main/tool.sh" "tool.sh" && bash tool.sh ;;
         x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;;
-        h) apt install unzip -y && git clone --branch master --depth 1 https://gh-proxy.org/https://github.com/nelvko/clash-for-linux-install.git && cd clash-for-linux-install && bash install.sh ;;
+        h) apt install unzip -y && git clone --branch master --depth 1 https://js.xiray.cc.cd/https://github.com/nelvko/clash-for-linux-install.git && cd clash-for-linux-install && bash install.sh ;;
         z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun ;;
         0) bash <(curl -fsSL https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
         dd) run_script "https://raw.githubusercontent.com/f1161291/other/refs/heads/main/dd.sh" "dd.sh" && bash dd.sh ;;
