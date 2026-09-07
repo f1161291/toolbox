@@ -1,9 +1,0 @@
-services:
-  yx:
-    image: ghcr.io/byjoey/yx-tools:latest
-    container_name: yx
-    restart: always
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./data:/data
