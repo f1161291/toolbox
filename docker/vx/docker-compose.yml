@@ -1,33 +1,37 @@
+version: '3.8'
+
 services:
-mongo:
-    container_name:fiora-db
-    image:mongo
+  mongo:
+    container_name: fiora-db
+    image: mongo
     volumes:
-      -./data/mongo:/data/db
+      - ./data/mongo:/data/db
     networks:
-      -fiora-net
+      - fiora-net
     restart: always
-    
-redis:
-    container_name:fiora-redis
-    image:redis
+
+  redis:
+    container_name: fiora-redis
+    image: redis
     networks:
-      -fiora-net
+      - fiora-net
     restart: always
-    
-fiora:
-    container_name:vx
-    image:suisuijiang/fiora
+
+  fiora:
+    container_name: vx
+    image: suisuijiang/fiora
     ports:
-      -"1688:9200"# 左侧端口可自定义
+      - "1688:9200"
     environment:
-      -Database=mongodb://fiora-db:27017/fiora
-      -RedisHost=fiora-redis
+      - Database=mongodb://fiora-db:27017/fiora
+      - RedisHost=fiora-redis
     depends_on:
-      -mongo
-      -redis
+      - mongo
+      - redis
     networks:
-      -fiora-net
+      - fiora-net
     restart: always
+
 networks:
   fiora-net:
+    driver: bridge
