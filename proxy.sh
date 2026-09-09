@@ -309,6 +309,7 @@ menu() {
         c) run_script "https://git.io/aria2.sh" "aria2.sh" ;;
         d) bash <(curl_gh -sSLf https://ailg.ggbond.org/cd2.sh) ;;
         e) curl_gh https://rclone.org/install.sh | sudo bash ;;
+        f) bash<(curl-sSL atusu.cn/frp/install_frpc.sh) ;;
         g) rm -rf toolbox && git clone https://github.com/f1161291/toolbox && cd toolbox && chmod +x tool.sh && bash tool.sh ;;
         i) bash -c "$(curl_gh -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)" ;;
         j) curl_gh -fsSL https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh | sh ;;
