@@ -281,6 +281,7 @@ menu() {
     echo -e "${GREEN} c. aria2安装"
     echo -e "${GREEN} d. CD2安装"
     echo -e "${GREEN} e. Rclone"
+    echo -e "${GREEN} f. Frpc-Web"
     echo -e "${GREEN} g. YAML下载"
     echo -e "${GREEN} i. Pve-Debian"
     echo -e "${GREEN} j. Docker加速"
