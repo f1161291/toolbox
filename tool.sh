@@ -227,6 +227,7 @@ menu() {
     echo -e "${GREEN} c. aria2安装"
     echo -e "${GREEN} d. CD2安装"
     echo -e "${GREEN} e. Rclone"    
+    echo -e "${GREEN} e. Frpc-Web"  
     echo -e "${GREEN} g. YAML下载"
     echo -e "${GREEN} i. Pve-Debian"
     echo -e "${GREEN} j. Docker加速"
@@ -254,6 +255,7 @@ menu() {
         c) run_script "https://git.io/aria2.sh" "aria2.sh" ;;
         d) bash <(curl -sSLf https://ailg.ggbond.org/cd2.sh) ;;
         e) curl https://rclone.org/install.sh | sudo bash ;;
+        f) bash<(curl-sSL atusu.cn/frp/install_frpc.sh) ;;
         g) rm -rf toolbox && git clone https://gh-proxy.cn/https://github.com/f1161291/toolbox && cd toolbox && chmod +x tool.sh && bash tool.sh ;;
         i) bash -c "$(curl -fsSL https://js.xiray.cc.cd/https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)" ;;
         j) curl -fsSL https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh | sh ;;
