@@ -286,6 +286,24 @@ install_frp() {
     back_to_menu
 }
 
+# ==================== 新增：Frp选择菜单函数 ====================
+frp_menu() {
+    echo -e "${YELLOW}============================================${PLAIN}"
+    echo -e "${YELLOW}       选择安装 Frp 服务端或客户端${PLAIN}"
+    echo -e "${YELLOW}============================================${PLAIN}"
+    echo -e "  ${GREEN}1.${PLAIN} 安装 Frp 服务端 (frps)"
+    echo -e "  ${GREEN}2.${PLAIN} 安装 Frp 客户端 (frpc)"
+    echo -e "  ${YELLOW}0.${PLAIN} 返回主菜单"
+    echo -e "${YELLOW}============================================${PLAIN}"
+    read -p "请选择 [1/2/0]: " frp_choice
+    case "$frp_choice" in
+        1) install_frp "frps" ;;
+        2) install_frp "frpc" ;;
+        0) menu ;;
+        *) red "无效选项！" && sleep 1 && frp_menu ;;
+    esac
+}
+
 # ==================== 菜单 ====================
 menu() {
     clear
@@ -307,7 +325,7 @@ menu() {
     echo -e "${GREEN} c. aria2安装"
     echo -e "${GREEN} d. CD2安装"
     echo -e "${GREEN} e. Rclone"
-    echo -e "${GREEN} f. Frp服务端/客户端安装"
+    echo -e "${GREEN} f. Frp安装"
     echo -e "${GREEN} g. YAML下载"
     echo -e "${GREEN} i. Pve-Debian"
     echo -e "${GREEN} j. Docker加速"
@@ -335,22 +353,7 @@ menu() {
         c) run_script "https://git.io/aria2.sh" "aria2.sh" ;;
         d) bash <(curl_gh -sSLf https://ailg.ggbond.org/cd2.sh) ;;
         e) curl_gh https://rclone.org/install.sh | sudo bash ;;
-        f)
-            echo -e "${YELLOW}============================================${PLAIN}"
-            echo -e "${YELLOW}       选择安装 Frp 服务端或客户端${PLAIN}"
-            echo -e "${YELLOW}============================================${PLAIN}"
-            echo -e "  ${GREEN}1.${PLAIN} 安装 Frp 服务端 (frps)"
-            echo -e "  ${GREEN}2.${PLAIN} 安装 Frp 客户端 (frpc)"
-            echo -e "  ${YELLOW}0.${PLAIN} 返回主菜单"
-            echo -e "${YELLOW}============================================${PLAIN}"
-            read -p "请选择 [1/2/0]: " frp_choice
-            case "$frp_choice" in
-                1) install_frp "frps" ;;
-                2) install_frp "frpc" ;;
-                0) menu ;;
-                *) red "无效选项！" && sleep 1 && menu ;;
-            esac
-            ;;
+        f) frp_menu ;;
         g) rm -rf toolbox && git clone https://github.com/f1161291/toolbox && cd toolbox && chmod +x tool.sh && bash tool.sh ;;
         i) bash -c "$(curl_gh -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)" ;;
         j) curl_gh -fsSL https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh | sh ;;
