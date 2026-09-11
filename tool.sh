@@ -328,7 +328,7 @@ menu() {
             x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;;
             h) apt install unzip -y && git clone --branch master --depth 1 https://github.com/nelvko/clash-for-linux-install.git && cd clash-for-linux-install && bash install.sh ;;
             z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun ;;
-            0) bash <(curl -fsSL https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
+            #0) bash <(curl -fsSL https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
             dd) run_script "https://raw.githubusercontent.com/f1161291/other/refs/heads/main/dd.sh" "dd.sh" ;;
             q|Q) green "已退出脚本" && exit 0 ;;
             *) red "无效选项！" && sleep 1 ;;
