@@ -299,7 +299,7 @@ menu() {
         echo -e "${GREEN} x. 一键换源"
         echo -e "${GREEN} z. Docker"
         echo -e "${RED}dd. DD系统"
-        echo -e "${GREEN} 0. Aurora面板"
+        #echo -e "${GREEN} 0. Aurora面板"
         echo -e "${GREEN} q. 退出脚本"
         echo -e "${PLAIN}"
 
