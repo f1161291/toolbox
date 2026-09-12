@@ -1,0 +1,8 @@
+services:
+  orbien-server:
+    image: ghcr.io/orbien-org/orbien-server:latest
+    container_name: orbien-server
+    restart: always
+    network_mode: host
+    volumes:
+      - ./orbien-server.toml:/etc/orbien/orbien-server.toml:ro

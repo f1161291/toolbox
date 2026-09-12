@@ -1,0 +1,16 @@
+listen = "0.0.0.0:9527"
+
+# 可选 通过域名路由
+# httpGwPort = 80
+# httpsGwPort = 443
+
+# 可选：客户端鉴权
+# [auth]
+# token = "YOUR_TOKEN"
+
+# 可选：Web 管理面板
+[dashboard]
+addr = "0.0.0.0"
+port = 8020
+user = "admin"
+password = "123456"
