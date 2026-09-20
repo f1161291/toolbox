@@ -1,7 +1,7 @@
 services:
   lx-sync-server:
     image: xcq0607/lxserver:latest
-    container_name: lx-sync-server
+    container_name: lxmusic
     restart: always
     ports:
       - "163:9527"
