@@ -18,3 +18,5 @@ services:
       - SUBSONIC_ONLINE_SEARCH_SOURCES=wy,tx,kw,kg,mg
       - SUBSONIC_CACHE_ON_PLAY=true
       - SUBSONIC_PLAY_CACHE_FIRST=true
+      - ENABLE_CACHE_SIZE_LIMIT=true
+      - CACHE_SIZE_LIMIT=1024
