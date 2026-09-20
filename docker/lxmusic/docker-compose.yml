@@ -12,8 +12,9 @@ services:
       - ./music:/server/music
     environment:
       - NODE_ENV=production
-      # - FRONTEND_PASSWORD=123456
-      # - ENABLE_WEBPLAYER_AUTH=true
-      # - WEBPLAYER_PASSWORD=yourpassword
-      # - ADMIN_PATH=
-      # - PLAYER_PATH=/music
+      - SUBSONIC_ENABLE=true
+      - SUBSONIC_ONLINE_SEARCH=true
+      - SUBSONIC_ONLINE_SEARCH_MODE=fallback
+      - SUBSONIC_ONLINE_SEARCH_SOURCES=wy,tx,kw,kg,mg
+      - SUBSONIC_CACHE_ON_PLAY=true
+      - SUBSONIC_PLAY_CACHE_FIRST=true
