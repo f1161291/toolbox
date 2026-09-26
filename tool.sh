@@ -324,7 +324,7 @@ menu() {
             l) bash -c "$(curl -sSL https://www.linkease.com/rd/fastpve/)" ;;
             n) bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)" ;;
             m) bash <(curl -Ls https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh) ;;
-            u)  wget https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh && chmod +x tool.sh && bash tool.sh ;;
+            u) apt update -y  && wget -N --no-check-certificate https://js.xiray.cc.cd/https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh && chmod +x tool.sh && bash tool.sh ;;
             x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;;
             h) apt install unzip -y && git clone --branch master --depth 1 https://github.com/nelvko/clash-for-linux-install.git && cd clash-for-linux-install && bash install.sh ;;
             z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun ;;
