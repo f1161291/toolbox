@@ -42,12 +42,10 @@ generate_password() {
     date +%s | sha256sum | base64 | head -c 20
 }
 
-back_to_menu() {
-    local msg="${1:-所选操作执行完成}"
-    green "$msg"
-    read -p "输入 'y' 退出，或按任意键回到主菜单: " input
-    [[ "$input" == "y" ]] && exit 0
-    # 不递归，由 menu 的 while 循环接管
+# 统一暂停函数：执行完任何操作后调用，确保用户看到结果再返回菜单
+pause_return() {
+    echo
+    read -p "按回车键返回主菜单..." _
 }
 
 # ==================== 系统检测 ====================
@@ -113,6 +111,7 @@ root_user() {
 
     echo "root:$password" | sudo chpasswd root || {
         red "密码设置失败！"
+        pause_return
         return 1
     }
 
@@ -130,7 +129,7 @@ root_user() {
     green "密码: $password"
     yellow "请妥善保存！"
 
-    back_to_menu
+    pause_return
 }
 
 open_ports() {
@@ -152,7 +151,7 @@ open_ports() {
     netfilter-persistent save 2>/dev/null
 
     green "防火墙已完全放行！"
-    back_to_menu
+    pause_return
 }
 
 tcp_bbr_optimize() {
@@ -199,11 +198,29 @@ EOF
 
     green "TCP/BBR优化已完成！"
     yellow "$(lsmod | grep bbr || echo 'BBR未加载，可能需要重启')"
-    back_to_menu
+    pause_return
+}
+
+# ==================== 通用执行器 ====================
+# 统一执行外部脚本，并在结束后自动返回菜单
+# 用法: run_remote <描述> <命令...>
+run_remote() {
+    local desc="$1"; shift
+    echo -e "${YELLOW}============================================${PLAIN}"
+    echo -e "${YELLOW}        ${desc}${PLAIN}"
+    echo -e "${YELLOW}============================================${PLAIN}"
+    "$@"
+    local ret=$?
+    if [[ $ret -ne 0 ]]; then
+        red "执行结束（返回码: $ret）"
+    else
+        green "执行完成"
+    fi
+    pause_return
+    return $ret
 }
 
 # ==================== 下载并执行脚本函数 ====================
-# 说明：本函数只负责下载 + 执行，调用方不要再重复执行脚本
 run_script() {
     local url="$1"
     local name="${2:-script.sh}"
@@ -242,7 +259,7 @@ install_frp() {
         bash <(curl -sSL https://atusu.cn/frp/install_frpc.sh)
     fi
 
-    back_to_menu
+    pause_return
 }
 
 # ==================== Frp选择菜单 ====================
@@ -308,28 +325,28 @@ menu() {
             1) root_user ;;
             2) open_ports ;;
             3) tcp_bbr_optimize ;;
-            5) curl -fsSL https://res.oplist.org/script/v4.sh | sudo bash ;;
-            6) bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh) ;;
-            7) apt install git -y && bash <(curl -fsSL https://raw.githubusercontent.com/slobys/SSL-Renewal/main/acme.sh) ;;
-            8) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/Oracle-server-keep-alive-script/-/raw/main/oalive.sh) ;;
-            a) bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) ;;
-            b) bash <(curl -fsSL https://raw.githubusercontent.com/byJoey/Actions-bbr-v3/main/install.sh) ;;
-            c) run_script "https://git.io/aria2.sh" "aria2.sh" ;;
-            d) bash <(curl -sSLf https://ailg.ggbond.org/cd2.sh) ;;
-            e) curl https://rclone.org/install.sh | sudo bash ;;
+            5) run_remote "安装 Alist" bash -c 'curl -fsSL https://res.oplist.org/script/v4.sh | sudo bash' ;;
+            6) run_remote "安装 x-ui" bash -c 'bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh)' ;;
+            7) run_remote "自动 SSL 证书" bash -c 'apt install git -y && bash <(curl -fsSL https://raw.githubusercontent.com/slobys/SSL-Renewal/main/acme.sh)' ;;
+            8) run_remote "性能测试" bash -c 'bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/Oracle-server-keep-alive-script/-/raw/main/oalive.sh)' ;;
+            a) run_remote "安装 3X-UI 面板" bash -c 'bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)' ;;
+            b) run_remote "BBR3 加速" bash -c 'bash <(curl -fsSL https://raw.githubusercontent.com/byJoey/Actions-bbr-v3/main/install.sh)' ;;
+            c) run_remote "安装 aria2" run_script "https://git.io/aria2.sh" "aria2.sh" ;;
+            d) run_remote "安装 CD2" bash -c 'bash <(curl -sSLf https://ailg.ggbond.org/cd2.sh)' ;;
+            e) run_remote "安装 Rclone" bash -c 'curl https://rclone.org/install.sh | sudo bash' ;;
             f) frp_menu ;;
-            g) rm -rf toolbox && git clone https://github.com/f1161291/toolbox && cd toolbox && chmod +x tool.sh && bash tool.sh ;;
-            i) bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)" ;;
-            j) curl -fsSL https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh | sh ;;
-            l) bash -c "$(curl -sSL https://www.linkease.com/rd/fastpve/)" ;;
-            n) bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)" ;;
-            m) bash <(curl -Ls https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh) ;;
-            u) apt update -y  && wget -N --no-check-certificate https://js.xiray.cc.cd/https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh && chmod +x tool.sh && bash tool.sh ;;
-            x) bash <(curl -sSL https://linuxmirrors.cn/main.sh) ;;
-            h) apt install unzip -y && git clone --branch master --depth 1 https://github.com/nelvko/clash-for-linux-install.git && cd clash-for-linux-install && bash install.sh ;;
-            z) curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun ;;
-            #0) bash <(curl -fsSL https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh) ;;
-            dd) run_script "https://raw.githubusercontent.com/f1161291/other/refs/heads/main/dd.sh" "dd.sh" ;;
+            g) run_remote "YAML 下载工具" bash -c 'rm -rf toolbox && git clone https://github.com/f1161291/toolbox && cd toolbox && chmod +x tool.sh && bash tool.sh' ;;
+            i) run_remote "Pve-Debian" bash -c 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)"' ;;
+            j) run_remote "Docker 加速" bash -c 'curl -fsSL https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh | sh' ;;
+            l) run_remote "LXC 容器" bash -c 'bash -c "$(curl -sSL https://www.linkease.com/rd/fastpve/)"' ;;
+            n) run_remote "安装 1Panel" bash -c 'bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)"' ;;
+            m) run_remote "安装 Milivpn" bash -c 'bash <(curl -Ls https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh)' ;;
+            u) run_remote "脚本更新" bash -c 'apt update -y && wget -N --no-check-certificate https://js.xiray.cc.cd/https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh && chmod +x tool.sh && bash tool.sh' ;;
+            x) run_remote "一键换源" bash -c 'bash <(curl -sSL https://linuxmirrors.cn/main.sh)' ;;
+            h) run_remote "安装 Mihomo" bash -c 'apt install unzip -y && git clone --branch master --depth 1 https://github.com/nelvko/clash-for-linux-install.git && cd clash-for-linux-install && bash install.sh' ;;
+            z) run_remote "安装 Docker" bash -c 'curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun' ;;
+            #0) run_remote "Aurora 面板" bash -c 'bash <(curl -fsSL https://raw.githubusercontent.com/Aurora-Admin-Panel/deploy/main/install.sh)' ;;
+            dd) run_remote "DD 系统" run_script "https://raw.githubusercontent.com/f1161291/other/refs/heads/main/dd.sh" "dd.sh" ;;
             q|Q) green "已退出脚本" && exit 0 ;;
             *) red "无效选项！" && sleep 1 ;;
         esac
