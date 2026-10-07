@@ -36,6 +36,35 @@ check_root() {
     return 0
 }
 
+# 以 root 身份执行命令（已是 root 则直接执行，避免无 sudo 环境报错）
+run_as_root() {
+    if [[ $EUID -eq 0 ]]; then
+        "$@"
+    elif type -P sudo >/dev/null 2>&1; then
+        sudo "$@"
+    else
+        red "需要 root 权限且未找到 sudo"
+        return 1
+    fi
+}
+
+# 设置 sshd_config 选项：删除旧配置行并插入到首个 Match 块之前（若存在）
+sshd_set_option() {
+    local conf="$1" key="$2" value="$3" line="$2 $3"
+    local tmp="${conf}.tmp.$$"
+    awk -v key="$key" -v line="$line" '
+        {
+            tok = $1
+            sub(/=.*/, "", tok)
+            if (tok == key) next
+            if (!done && tok == "Match") { print line; done = 1 }
+            print
+        }
+        END { if (!done) print line }
+    ' "$conf" > "$tmp" || { rm -f "$tmp"; return 1; }
+    cat "$tmp" > "$conf" && rm -f "$tmp"
+}
+
 # ==================== 工具函数 ====================
 get_public_ip() {
     local ip=""
@@ -62,7 +91,7 @@ download_script() {
     local file="$2"
     rm -f "$file"
     if type -P wget >/dev/null 2>&1; then
-        wget -N --no-check-certificate -q "$url" -O "$file"
+        wget --no-check-certificate -q "$url" -O "$file"
     elif type -P curl >/dev/null 2>&1; then
         curl -fsSL --insecure -o "$file" "$url"
     else
@@ -207,26 +236,32 @@ root_user() {
     fi
 
     local conf=/etc/ssh/sshd_config
-    cp -n "$conf" "$conf.bak" 2>/dev/null
-    # 清除旧的 Port 配置，避免重复行冲突
-    sed -i -E 's/^[#[:space:]]*Port[[:space:]]+.*/#&/' "$conf"
-    if grep -qE '^#?Port[[:space:]]+' "$conf"; then
-        sed -i -E "0,/^[#]?Port.*/s//Port $sshport/" "$conf"
-    else
-        echo "Port $sshport" >> "$conf"
-    fi
-    sed -i -E 's/^[#[:space:]]*PermitRootLogin.*/PermitRootLogin yes/' "$conf"
-    grep -qE '^PermitRootLogin' "$conf" || echo "PermitRootLogin yes" >> "$conf"
-    sed -i -E 's/^[#[:space:]]*PasswordAuthentication.*/PasswordAuthentication yes/' "$conf"
-    grep -qE '^PasswordAuthentication' "$conf" || echo "PasswordAuthentication yes" >> "$conf"
-
-    # 配置校验失败则回滚，避免重启后无法连接
-    if type -P sshd >/dev/null 2>&1 && ! sshd -t 2>/dev/null; then
-        red "sshd 配置校验失败，已回滚！"
-        [[ -f "$conf.bak" ]] && mv -f "$conf.bak" "$conf"
+    local conf_bak
+    conf_bak=$(mktemp 2>/dev/null || echo "/tmp/sshd_config.bak.$$")
+    if ! cp -f "$conf" "$conf_bak"; then
+        red "备份 SSH 配置失败"
         pause_return
         return 1
     fi
+    sshd_set_option "$conf" "Port" "$sshport" || { red "写入 SSH 端口失败"; rm -f "$conf_bak"; pause_return; return 1; }
+    sshd_set_option "$conf" "PermitRootLogin" "yes" || { red "写入 PermitRootLogin 失败"; rm -f "$conf_bak"; pause_return; return 1; }
+    sshd_set_option "$conf" "PasswordAuthentication" "yes" || { red "写入 PasswordAuthentication 失败"; rm -f "$conf_bak"; pause_return; return 1; }
+
+    # 配置校验失败则回滚，避免重启后无法连接
+    local sshd_bin
+    sshd_bin=$(type -P sshd 2>/dev/null || echo /usr/sbin/sshd)
+    if [[ -x "$sshd_bin" ]]; then
+        local sshd_err
+        if ! sshd_err=$("$sshd_bin" -t 2>&1); then
+            red "sshd 配置校验失败，已回滚！"
+            red "$sshd_err"
+            cat "$conf_bak" > "$conf"
+            rm -f "$conf_bak"
+            pause_return
+            return 1
+        fi
+    fi
+    rm -f "$conf_bak"
 
     if ! restart_ssh; then
         red "SSH 服务重启失败，请手动检查！"
@@ -265,7 +300,9 @@ open_ports() {
 
     netfilter-persistent save 2>/dev/null
     service iptables save 2>/dev/null
-    ip6tables-save > /etc/sysconfig/ip6tables 2>/dev/null
+    if [[ -d /etc/sysconfig ]]; then
+        ip6tables-save 2>/dev/null > /etc/sysconfig/ip6tables
+    fi
 
     green "防火墙已完全放行！"
     pause_return
@@ -359,7 +396,7 @@ frp_menu() {
         echo -e "${YELLOW}============================================${PLAIN}"
         read -r -p "请选择 [1/2/0]: " frp_choice
         case "$frp_choice" in
-            1) check_root || break; install_frp "frps"; pause_return; return ;;
+            1) if check_root; then install_frp "frps"; pause_return; fi; return ;;
             2) install_frp "frpc"; pause_return; return ;;
             0) return ;;
             *) red "无效选项！"; sleep 1 ;;
@@ -370,25 +407,39 @@ frp_menu() {
 # ==================== 主菜单 ====================
 menu() {
     while true; do
-        clear
+        clear 2>/dev/null
         echo -e "${RED}=================================="
         echo -e "${GREEN}          cc tool              "
         echo -e "${RED}        cc Linux一键运行脚本    "
+        echo -e "                                   "
         echo -e "${RED}=================================="
-        echo -e "${GREEN} --- 系统基础 ---"
-        echo -e "${GREEN} 1. root/SSH修改${PLAIN}   ${GREEN}2. 禁用防火墙${PLAIN}   ${GREEN}3. TCP/BBR优化${PLAIN}"
-        echo -e "${GREEN} x. 一键换源${PLAIN}       ${GREEN}b. BBR3加速${PLAIN}      ${GREEN}dd. DD系统${PLAIN}"
-        echo -e "${GREEN} --- 面板/代理 ---"
-        echo -e "${GREEN} 5. 安装Alist${PLAIN}      ${GREEN}6. 安装x-ui${PLAIN}       ${GREEN}a. 3X-UI面板${PLAIN}"
-        echo -e "${GREEN} n. 1Panel面板${PLAIN}     ${GREEN}h. Mihomo${PLAIN}         ${GREEN}m. Milivpn${PLAIN}"
-        echo -e "${GREEN} f. Frp安装${PLAIN}        ${GREEN}7. 自动SSL证书${PLAIN}"
-        echo -e "${GREEN} --- 工具/其他 ---"
-        echo -e "${GREEN} 8. 性能测试${PLAIN}       ${GREEN}c. aria2安装${PLAIN}      ${GREEN}d. CD2安装${PLAIN}"
-        echo -e "${GREEN} e. Rclone${PLAIN}         ${GREEN}g. YAML下载${PLAIN}       ${GREEN}j. Docker加速${PLAIN}"
-        echo -e "${GREEN} z. Docker${PLAIN}         ${GREEN}i. Pve-Debian${PLAIN}     ${GREEN}l. LXC容器${PLAIN}"
-        echo -e "${GREEN} u. 脚本更新${PLAIN}"
-        echo -e "${RED} q. 退出脚本${PLAIN}"
-        echo
+        echo -e "                                   "
+        echo -e "${GREEN} 1. root/SSH修改"
+        echo -e "${GREEN} 2. 禁用防火墙"
+        echo -e "${GREEN} 3. TCP/BBR优化"
+        echo -e "${GREEN} 5. 安装Alist"
+        echo -e "${GREEN} 6. 安装x-ui"
+        echo -e "${GREEN} 7. 自动SSL证书"
+        echo -e "${GREEN} 8. 性能测试"
+        echo -e "${GREEN} a. 3X-UI面板"
+        echo -e "${GREEN} b. BBR3加速"
+        echo -e "${GREEN} c. aria2安装"
+        echo -e "${GREEN} d. CD2安装"
+        echo -e "${GREEN} e. Rclone"
+        echo -e "${GREEN} f. Frp安装"
+        echo -e "${GREEN} g. YAML下载"
+        echo -e "${GREEN} i. Pve-Debian"
+        echo -e "${GREEN} j. Docker加速"
+        echo -e "${GREEN} l. LXC容器"
+        echo -e "${GREEN} n. 1Panel面板"
+        echo -e "${GREEN} m. Milivpn"
+        echo -e "${GREEN} h. Mihomo"
+        echo -e "${GREEN} u. 脚本更新"
+        echo -e "${GREEN} x. 一键换源"
+        echo -e "${GREEN} z. Docker"
+        echo -e "${RED}dd. DD系统"
+        echo -e "${GREEN} q. 退出脚本"
+        echo -e "${PLAIN}"
 
         read -r -p "请输入选项: " choice
         case "$choice" in
@@ -396,11 +447,9 @@ menu() {
             2) open_ports ;;
             3) tcp_bbr_optimize ;;
             5) banner "安装 Alist"
-               if curl -fsSL https://res.oplist.org/script/v4.sh -o "$WORK_DIR/alist.sh"; then
+               if download_script "https://res.oplist.org/script/v4.sh" "$WORK_DIR/alist.sh"; then
                    bash "$WORK_DIR/alist.sh"
                    rm -f "$WORK_DIR/alist.sh"
-               else
-                   red "Alist 安装脚本下载失败"
                fi
                pause_return ;;
             6) banner "安装 x-ui"
@@ -426,14 +475,14 @@ menu() {
                bash -c 'bash <(curl -sSLf https://ailg.ggbond.org/cd2.sh)'
                pause_return ;;
             e) banner "安装 Rclone"
-               bash -c 'curl https://rclone.org/install.sh | sudo bash'
+               run_as_root bash -c 'curl -fsSL https://rclone.org/install.sh | bash'
                pause_return ;;
             f) frp_menu ;;
             g) banner "YAML 下载工具"
                rm -rf "$WORK_DIR/toolbox"
                git clone https://github.com/f1161291/toolbox "$WORK_DIR/toolbox" 2>/dev/null \
                    && bash "$WORK_DIR/toolbox/tool.sh" \
-                   || red "克隆仓库失败，请检查网络"
+                   || red "克隆失败，请检查网络或 git 是否已安装"
                pause_return ;;
             i) banner "Pve-Debian"
                bash -c 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)"'
@@ -452,9 +501,9 @@ menu() {
                pause_return ;;
             u) banner "脚本更新"
                apt update -y >/dev/null 2>&1
-               download_script "https://js.xiray.cc.cd/https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh" tool.sh \
-                   && bash tool.sh \
-                   && rm -f tool.sh
+               download_script "https://js.xiray.cc.cd/https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh" "$WORK_DIR/update.sh" \
+                   && bash "$WORK_DIR/update.sh" \
+                   && rm -f "$WORK_DIR/update.sh"
                pause_return ;;
             x) banner "一键换源"
                bash -c 'bash <(curl -sSL https://linuxmirrors.cn/main.sh)'
@@ -464,7 +513,7 @@ menu() {
                rm -rf "$WORK_DIR/clash-for-linux-install"
                git clone --branch master --depth 1 https://github.com/nelvko/clash-for-linux-install.git "$WORK_DIR/clash-for-linux-install" 2>/dev/null \
                    && bash "$WORK_DIR/clash-for-linux-install/install.sh" \
-                   || red "克隆仓库失败，请检查网络"
+                   || red "克隆失败，请检查网络或 git 是否已安装"
                pause_return ;;
             z) banner "安装 Docker"
                bash -c 'curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun'
