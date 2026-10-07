@@ -325,7 +325,7 @@ menu() {
             1) root_user ;;
             2) open_ports ;;
             3) tcp_bbr_optimize ;;
-            5) run_remote "安装 Alist" bash -c 'curl -fsSL https://res.oplist.org/script/v4.sh | sudo bash' ;;
+            5) run_remote "安装 Alist" curl -fsSL https://res.oplist.org/script/v4.sh > install-openlist-v4.sh && sudo bash install-openlist-v4.sh ;;
             6) run_remote "安装 x-ui" bash -c 'bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh)' ;;
             7) run_remote "自动 SSL 证书" bash -c 'apt install git -y && bash <(curl -fsSL https://raw.githubusercontent.com/slobys/SSL-Renewal/main/acme.sh)' ;;
             8) run_remote "性能测试" bash -c 'bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/Oracle-server-keep-alive-script/-/raw/main/oalive.sh)' ;;
