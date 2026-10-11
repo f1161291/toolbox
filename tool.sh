@@ -478,12 +478,7 @@ menu() {
                run_as_root bash -c 'curl -fsSL https://rclone.org/install.sh | bash'
                pause_return ;;
             f) frp_menu ;;
-            g) banner "YAML 下载工具"
-               rm -rf "$WORK_DIR/toolbox"
-               git clone https://github.com/f1161291/toolbox "$WORK_DIR/toolbox" 2>/dev/null \
-                   && bash "$WORK_DIR/toolbox/tool.sh" \
-                   || red "克隆失败，请检查网络或 git 是否已安装"
-               pause_return ;;
+            g) rm -rf toolbox && git clone https://github.com/f1161291/toolbox  && cd toolbox && chmod +x tool.sh  && bash tool.sh ;;
             i) banner "Pve-Debian"
                bash -c 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)"'
                pause_return ;;
