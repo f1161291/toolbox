@@ -1,0 +1,49 @@
+services:
+  phprun:
+    # 直接使用 Docker Hub 上已推送的镜像
+    image: f1161291/phprun:latest
+    container_name: phprun
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - "8100:8100"          # 控制面板（与 pyrun 的 8000 错开）
+      - "8600-8699:8600-8699" # 任务端口范围，与 PORT_RANGE_* 保持一致
+    environment:
+      TZ: Asia/Shanghai
+      PANEL_TOKEN: ""        # 留空 = 不校验；填了则所有 API 需带 X-Token 头
+      PANEL_PORT: "8100"
+      PORT_RANGE_START: "8600"
+      PORT_RANGE_END: "8699"
+      # 新任务里可读取的默认参数
+      DEFAULT_HOST: "0.0.0.0"
+      # 运行期 pip 源：脚本缺依赖时自动 pip install 走这里（国内建议镜像）
+      PIP_INDEX_URL: ${PIP_INDEX_URL:-https://mirrors.aliyun.com/pypi/simple/}
+      # 运行期 composer 源：composer install / 自动 composer require 走这里
+      COMPOSER_MIRROR: ${COMPOSER_MIRROR:-https://mirrors.aliyun.com/composer/}
+      # 缺失依赖自动安装：1=开（缺包→自动 composer/pip install→自动重启一次） 0=关
+      AUTO_INSTALL_DEPS: ${AUTO_INSTALL_DEPS:-1}
+      # 磁盘日志保留天数：单文件按行首日期标记分段，每天 04:00 裁掉更早的内容
+      LOG_KEEP_DAYS: ${LOG_KEEP_DAYS:-5}
+      TG_BOT_TOKEN: ""   # @BotFather 的 token
+      TG_CHAT_ID: ""    # @userinfobot 的 Id
+    volumes:
+      - ./scripts:/mount      # 挂载目录：宿主机 ./scripts -> 容器 /mount
+      - ./data:/data          # 上传文件 / 任务工作区 / 日志 / composer 全局配置 持久化
+      - ./app:/app/app:ro     # 面板代码走挂载：改完 docker compose restart 即生效，无需重建镜像
+                              # （镜像里仍 COPY 了一份兜底，不挂载也能跑）
+      - /var/run/docker.sock:/var/run/docker.sock   # 让容器内可以操控宿主机 Docker（注意安全风险）
+    # 需要让脚本能访问宿主机网络之外的服务时，可去掉下面注释
+    # （用 host 模式时必须同时删掉上面的 ports:，容器直接用宿主机 8100/8600-8699）
+    # network_mode: host
+
+# 报 "all predefined address pools have been fully subnetted"（Docker 地址池耗尽）时，
+# 取消下面注释，把 subnet 改成一个未被占用的网段：
+#   查占用： ip route
+#           docker network ls -q | xargs -r -I{} docker network inspect -f '{{(index .IPAM.Config 0).Subnet}}' {}
+# networks:
+#   default:
+#     driver: bridge
+#     ipam:
+#       config:
+#         - subnet: 172.31.66.0/24
+#           gateway: 172.31.66.1
