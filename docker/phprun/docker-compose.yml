@@ -3,7 +3,7 @@ services:
     # 直接使用 Docker Hub 上已推送的镜像
     image: f1161291/phprun:latest
     container_name: phprun
-    restart: unless-stopped
+    restart: always
     network_mode: bridge
     ports:
       - "8100:8100"          # 控制面板（与 pyrun 的 8000 错开）
