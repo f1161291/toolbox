@@ -1,7 +1,7 @@
 services:
   bestip:
     image: kwxos/bestip:latest
-    container_name: BestIP
+    container_name: bestip
     environment:
       TZ: Asia/Shanghai
     volumes:
