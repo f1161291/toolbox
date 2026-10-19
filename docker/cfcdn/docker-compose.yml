@@ -1,0 +1,8 @@
+services:
+  bestip:
+    image: kwxos/bestip:latest
+    container_name: BestIP
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./BestIP:/root/
