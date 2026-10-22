@@ -6,6 +6,7 @@ services:
       - "3000:3000"
     environment:
       - TMDB_API_KEY=your_api_key_here
+      - ADMIN_TOKEN=
 #      - TMDB_PROXY_URL=https://tmdb-proxy.your-name.workers.dev
 #      - CORS_PROXY_URL=https://cors-proxy.your-name.workers.dev
       - ACCESS_PASSWORD=123
