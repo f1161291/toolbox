@@ -618,15 +618,13 @@ menu() {
                pause_return ;;
             z) banner "安装 Docker"
                echo -e "  ${GREEN}1.${PLAIN} 使用官方源安装"
-               echo -e "  ${GREEN}2.${PLAIN} 使用阿里云镜像源安装 (多源自动重试)"
-               echo -e "  ${GREEN}3.${PLAIN} 使用 LinuxMirrors 一键安装 (推荐国内环境)"
+               echo -e "  ${GREEN}2.${PLAIN} 使用 LinuxMirrors 一键安装 (推荐国内环境)"
                echo -e "  ${YELLOW}0.${PLAIN} 取消"
                echo -e "${YELLOW}============================================${PLAIN}"
                read -r -p "请选择 [1/2/3/0]: " docker_choice
                case "$docker_choice" in
                    1) run_script "https://get.docker.com" "get-docker.sh" "" ;;
-                   2) install_docker_aliyun ;;
-                   3) run_script "https://linuxmirrors.cn/docker.sh" "docker-mirrors.sh" "" ;;
+                   2) run_script "https://linuxmirrors.cn/docker.sh" "docker-mirrors.sh" "" ;;
                    0) yellow "已取消安装 Docker" ;;
                    *) red "无效选项，已取消" ;;
                esac
