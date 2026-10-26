@@ -502,7 +502,7 @@ menu() {
                run_script "https://raw.githubusercontent.com/byJoey/Actions-bbr-v3/main/install.sh" "bbr3.sh"
                pause_return ;;
             c) banner "安装 aria2"
-               run_script "https://js.xiray.cc.cd/https://raw.githubusercontent.com/P3TERX/aria2.sh/master/aria2.sh" "aria2.sh"
+               run_script "https://raw.githubusercontent.com/P3TERX/aria2.sh/master/aria2.sh" "aria2.sh"
                pause_return ;;
             d) banner "安装 CD2"
                run_script "https://ailg.ggbond.org/cd2.sh" "cd2.sh"
@@ -524,7 +524,7 @@ menu() {
                fi
                pause_return ;;
             i) banner "Pve-Debian"
-               run_script "https://js.xiray.cc.cd/https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh" "pve-debian.sh"
+               run_script "https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh" "pve-debian.sh"
                pause_return ;;
             j) banner "Docker 加速"
                run_script "https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh" "hubproxy.sh" "" sh
@@ -572,7 +572,17 @@ menu() {
                fi
                pause_return ;;
             z) banner "安装 Docker"
-               run_script "https://get.docker.com" "get-docker.sh" "docker --mirror Aliyun"
+               echo -e "  ${GREEN}1.${PLAIN} 使用官方源安装"
+               echo -e "  ${GREEN}2.${PLAIN} 使用阿里云镜像源安装 (--mirror Aliyun)"
+               echo -e "  ${YELLOW}0.${PLAIN} 取消"
+               echo -e "${YELLOW}============================================${PLAIN}"
+               read -r -p "请选择 [1/2/0]: " docker_choice
+               case "$docker_choice" in
+                   1) run_script "https://get.docker.com" "get-docker.sh" "" ;;
+                   2) run_script "https://get.docker.com" "get-docker.sh" "docker --mirror Aliyun" ;;
+                   0) yellow "已取消安装 Docker" ;;
+                   *) red "无效选项，已取消" ;;
+               esac
                pause_return ;;
             dd) banner "DD 系统"
                 run_script "https://raw.githubusercontent.com/f1161291/other/refs/heads/main/dd.sh" "dd.sh"
