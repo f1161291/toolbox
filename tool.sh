@@ -107,17 +107,29 @@ download_script() {
     return 0
 }
 
-# 运行下载的脚本文件
+# 下载并运行脚本，自动处理非终端 stdin
+# 用法: run_script <url> <本地名> [参数] [解释器]
 run_script() {
     local url="$1"
     local name="${2:-script.sh}"
     local args="${3:-}"
+    local interp="${4:-bash}"
 
     mkdir -p "$WORK_DIR"
     local target="$WORK_DIR/$name"
     download_script "$url" "$target" || return 1
-    bash "$target" $args
-    local ret=$?
+
+    local ret=0
+    if [[ -t 0 ]]; then
+        $interp "$target" $args
+        ret=$?
+    elif [[ -r /dev/tty ]]; then
+        $interp "$target" $args < /dev/tty
+        ret=$?
+    else
+        $interp "$target" $args
+        ret=$?
+    fi
     rm -f "$target"
     return $ret
 }
@@ -154,6 +166,11 @@ ensure_deps() {
         fi
     done
     green "依赖安装完成"
+
+    # git 供 g/h 等选项使用，缺失时给出提示而非直接失败
+    if ! type -P git >/dev/null 2>&1; then
+        yellow "提示：未检测到 git，部分选项（YAML下载、Mihomo）将不可用"
+    fi
 }
 
 # ==================== 系统检测 ====================
@@ -169,6 +186,7 @@ detect_os() {
     local os_lower
     os_lower=$(echo "$os_info" | tr '[:upper:]' '[:lower:]')
     case "$os_lower" in
+        *armbian*) echo "Debian";;
         *debian*) echo "Debian";;
         *ubuntu*) echo "Ubuntu";;
         *centos*|*red\ hat*|*kernel*|*oracle\ linux*|*alma*|*rocky*) echo "CentOS";;
@@ -229,7 +247,7 @@ root_user() {
     read -r -p "输入root密码（留空自动生成）: " input_pass
     [[ -n "$input_pass" ]] && password="$input_pass"
 
-    if ! echo "root:$password" | chpasswd; then
+    if ! printf 'root:%s\n' "$password" | chpasswd; then
         red "密码设置失败！"
         pause_return
         return 1
@@ -285,8 +303,14 @@ open_ports() {
 
     systemctl stop firewalld 2>/dev/null; systemctl disable firewalld 2>/dev/null
     ufw disable 2>/dev/null
-    setenforce 0 2>/dev/null
-    sed -i 's/^SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config 2>/dev/null
+
+    # Armbian 默认无 SELinux，仅在存在时处理
+    if type -P setenforce >/dev/null 2>&1; then
+        setenforce 0 2>/dev/null
+    fi
+    if [[ -f /etc/selinux/config ]]; then
+        sed -i 's/^SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config 2>/dev/null
+    fi
 
     local table
     for table in filter nat mangle raw; do
@@ -354,10 +378,10 @@ EOF
     sysctl --system >/dev/null 2>&1
 
     green "TCP/BBR优化已完成！"
-    if lsmod 2>/dev/null | grep -q bbr; then
+    if [[ "$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null)" == "bbr" ]]; then
         green "BBR 已加载"
     else
-        yellow "BBR未加载，可能需要重启"
+        yellow "BBR 未加载，可能需要重启"
     fi
     pause_return
 }
@@ -373,7 +397,13 @@ install_frp() {
             "https://raw.githubusercontent.com/mvscode/frps-onekey/master/install-frps.sh" \
             "$WORK_DIR/install-frps.sh"; then
             green "frps 脚本下载成功，开始安装..."
-            bash "$WORK_DIR/install-frps.sh" install
+            if [[ -t 0 ]]; then
+                bash "$WORK_DIR/install-frps.sh" install
+            elif [[ -r /dev/tty ]]; then
+                bash "$WORK_DIR/install-frps.sh" install < /dev/tty
+            else
+                bash "$WORK_DIR/install-frps.sh" install
+            fi
             rm -f "$WORK_DIR/install-frps.sh"
         else
             red "frps 脚本下载失败，请检查网络连接"
@@ -382,7 +412,7 @@ install_frp() {
         if ! type -P curl >/dev/null 2>&1; then
             red "frpc 安装需要 curl"
         else
-            bash <(curl -sSL https://atusu.cn/frp/install_frpc.sh)
+            run_script "https://atusu.cn/frp/install_frpc.sh" "install_frpc.sh"
         fi
     fi
 }
@@ -396,7 +426,7 @@ frp_menu() {
         echo -e "${YELLOW}============================================${PLAIN}"
         read -r -p "请选择 [1/2/0]: " frp_choice
         case "$frp_choice" in
-            1) if check_root; then install_frp "frps"; pause_return; fi; return ;;
+            1) if check_root; then install_frp "frps"; fi; pause_return; return ;;
             2) install_frp "frpc"; pause_return; return ;;
             0) return ;;
             *) red "无效选项！"; sleep 1 ;;
@@ -447,71 +477,102 @@ menu() {
             2) open_ports ;;
             3) tcp_bbr_optimize ;;
             5) banner "安装 Alist"
-               if download_script "https://res.oplist.org/script/v4.sh" "$WORK_DIR/alist.sh"; then
-                   bash "$WORK_DIR/alist.sh"
-                   rm -f "$WORK_DIR/alist.sh"
-               fi
+               run_script "https://res.oplist.org/script/v4.sh" "alist.sh"
                pause_return ;;
             6) banner "安装 x-ui"
-               bash -c 'bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh)'
+               run_script "https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh" "x-ui.sh"
                pause_return ;;
             7) banner "自动 SSL 证书"
-               apt install git -y >/dev/null 2>&1
-               bash -c 'bash <(curl -fsSL https://raw.githubusercontent.com/slobys/SSL-Renewal/main/acme.sh)'
+               if ! type -P git >/dev/null 2>&1; then
+                   case "$(detect_os)" in
+                       Debian|Ubuntu) apt -y install git >/dev/null 2>&1 ;;
+                       CentOS) yum -y install git >/dev/null 2>&1 ;;
+                       Alpine) apk add git >/dev/null 2>&1 ;;
+                   esac
+               fi
+               run_script "https://raw.githubusercontent.com/slobys/SSL-Renewal/main/acme.sh" "acme.sh"
                pause_return ;;
             8) banner "性能测试"
-               bash -c 'bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/Oracle-server-keep-alive-script/-/raw/main/oalive.sh)'
+               run_script "https://gitlab.com/spiritysdx/Oracle-server-keep-alive-script/-/raw/main/oalive.sh" "oalive.sh"
                pause_return ;;
             a) banner "安装 3X-UI 面板"
-               bash -c 'bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)'
+               run_script "https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh" "3x-ui.sh"
                pause_return ;;
             b) banner "BBR3 加速"
-               bash -c 'bash <(curl -fsSL https://raw.githubusercontent.com/byJoey/Actions-bbr-v3/main/install.sh)'
+               run_script "https://raw.githubusercontent.com/byJoey/Actions-bbr-v3/main/install.sh" "bbr3.sh"
                pause_return ;;
             c) banner "安装 aria2"
-               run_script "https://git.io/aria2.sh" "aria2.sh"
+               run_script "https://js.xiray.cc.cd/https://raw.githubusercontent.com/P3TERX/aria2.sh/master/aria2.sh" "aria2.sh"
                pause_return ;;
             d) banner "安装 CD2"
-               bash -c 'bash <(curl -sSLf https://ailg.ggbond.org/cd2.sh)'
+               run_script "https://ailg.ggbond.org/cd2.sh" "cd2.sh"
                pause_return ;;
             e) banner "安装 Rclone"
-               run_as_root bash -c 'curl -fsSL https://rclone.org/install.sh | bash'
+               if check_root; then
+                   run_script "https://rclone.org/install.sh" "rclone.sh"
+               fi
                pause_return ;;
             f) frp_menu ;;
-            g) rm -rf toolbox && git clone https://github.com/f1161291/toolbox  && cd toolbox && chmod +x tool.sh  && bash tool.sh ;;
+            g) banner "YAML 下载"
+               if type -P git >/dev/null 2>&1; then
+                   ( rm -rf /tmp/cc-tool/toolbox \
+                     && git clone --depth 1 https://github.com/f1161291/toolbox /tmp/cc-tool/toolbox \
+                     && green "已下载到 /tmp/cc-tool/toolbox" ) \
+                       || red "克隆失败，请检查网络"
+               else
+                   red "未安装 git，无法下载"
+               fi
+               pause_return ;;
             i) banner "Pve-Debian"
-               bash -c 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh)"'
+               run_script "https://js.xiray.cc.cd/https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh" "pve-debian.sh"
                pause_return ;;
             j) banner "Docker 加速"
-               bash -c 'curl -fsSL https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh | sh'
+               run_script "https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh" "hubproxy.sh" "" sh
                pause_return ;;
             l) banner "LXC 容器"
-               bash -c 'bash -c "$(curl -sSL https://www.linkease.com/rd/fastpve/)"'
+               run_script "https://www.linkease.com/rd/fastpve/" "fastpve.sh"
                pause_return ;;
             n) banner "安装 1Panel"
-               bash -c 'bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)"'
+               run_script "https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh" "1panel.sh"
                pause_return ;;
             m) banner "安装 Milivpn"
-               bash -c 'bash <(curl -Ls https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh)'
+               run_script "https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh" "milivpn.sh"
                pause_return ;;
             u) banner "脚本更新"
                apt update -y >/dev/null 2>&1
-               download_script "https://js.xiray.cc.cd/https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh" "$WORK_DIR/update.sh" \
-                   && bash "$WORK_DIR/update.sh" \
-                   && rm -f "$WORK_DIR/update.sh"
+               run_script "https://js.xiray.cc.cd/https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh" "update.sh"
                pause_return ;;
             x) banner "一键换源"
-               bash -c 'bash <(curl -sSL https://linuxmirrors.cn/main.sh)'
+               run_script "https://linuxmirrors.cn/main.sh" "mirrors.sh"
                pause_return ;;
             h) banner "安装 Mihomo"
-               apt install unzip -y >/dev/null 2>&1
+               if ! type -P git >/dev/null 2>&1; then
+                   case "$(detect_os)" in
+                       Debian|Ubuntu) apt -y install git >/dev/null 2>&1 ;;
+                       CentOS) yum -y install git >/dev/null 2>&1 ;;
+                       Alpine) apk add git >/dev/null 2>&1 ;;
+                   esac
+               fi
+               case "$(detect_os)" in
+                   Debian|Ubuntu) apt -y install unzip >/dev/null 2>&1 ;;
+                   CentOS) yum -y install unzip >/dev/null 2>&1 ;;
+                   Alpine) apk add unzip >/dev/null 2>&1 ;;
+               esac
                rm -rf "$WORK_DIR/clash-for-linux-install"
-               git clone --branch master --depth 1 https://github.com/nelvko/clash-for-linux-install.git "$WORK_DIR/clash-for-linux-install" 2>/dev/null \
-                   && bash "$WORK_DIR/clash-for-linux-install/install.sh" \
-                   || red "克隆失败，请检查网络或 git 是否已安装"
+               if git clone --branch master --depth 1 https://github.com/nelvko/clash-for-linux-install.git "$WORK_DIR/clash-for-linux-install" 2>/dev/null; then
+                   if [[ -t 0 ]]; then
+                       bash "$WORK_DIR/clash-for-linux-install/install.sh"
+                   elif [[ -r /dev/tty ]]; then
+                       bash "$WORK_DIR/clash-for-linux-install/install.sh" < /dev/tty
+                   else
+                       bash "$WORK_DIR/clash-for-linux-install/install.sh"
+                   fi
+               else
+                   red "克隆失败，请检查网络或 git 是否已安装"
+               fi
                pause_return ;;
             z) banner "安装 Docker"
-               bash -c 'curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun'
+               run_script "https://get.docker.com" "get-docker.sh" "docker --mirror Aliyun"
                pause_return ;;
             dd) banner "DD 系统"
                 run_script "https://raw.githubusercontent.com/f1161291/other/refs/heads/main/dd.sh" "dd.sh"
@@ -524,5 +585,11 @@ menu() {
 
 # ==================== 启动 ====================
 mkdir -p "$WORK_DIR"
+
+# 若通过管道运行（curl | bash），把 stdin 切回终端，避免菜单和子脚本读不到输入
+if [[ ! -t 0 ]] && [[ -r /dev/tty ]]; then
+    exec < /dev/tty
+fi
+
 ensure_deps >/dev/null 2>&1
 menu
