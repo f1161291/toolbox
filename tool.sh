@@ -434,6 +434,51 @@ frp_menu() {
     done
 }
 
+# ==================== Docker 安装辅助函数 ====================
+install_docker_aliyun() {
+    local os_name
+    os_name=$(detect_os)
+    local os_path="debian"
+    [[ "$os_name" == "Ubuntu" ]] && os_path="ubuntu"
+
+    local script_url=""
+    local script_file="$WORK_DIR/get-docker.sh"
+    local urls=(
+        "https://mirrors.aliyun.com/docker-ce/linux/${os_path}/get-docker.sh"
+        "https://mirrors.azure.cn/docker-ce/linux/${os_path}/get-docker.sh"
+        "https://raw.githubusercontent.com/docker/docker-install/master/install.sh"
+    )
+
+    mkdir -p "$WORK_DIR"
+    for url in "${urls[@]}"; do
+        yellow "正在尝试从以下地址下载安装脚本: $url"
+        if download_script "$url" "$script_file"; then
+            script_url="$url"
+            green "脚本下载成功！"
+            break
+        else
+            red "下载失败，尝试下一个源..."
+        fi
+    done
+
+    if [[ -z "$script_url" ]]; then
+        red "所有镜像源均下载失败，建议选择【3】使用 LinuxMirrors 一键安装。"
+        return 1
+    fi
+
+    # 执行脚本，并传入阿里云镜像参数
+    if [[ -t 0 ]]; then
+        bash "$script_file" --mirror Aliyun
+    elif [[ -r /dev/tty ]]; then
+        bash "$script_file" --mirror Aliyun < /dev/tty
+    else
+        bash "$script_file" --mirror Aliyun
+    fi
+    local ret=$?
+    rm -f "$script_file"
+    return $ret
+}
+
 # ==================== 主菜单 ====================
 menu() {
     while true; do
@@ -573,13 +618,15 @@ menu() {
                pause_return ;;
             z) banner "安装 Docker"
                echo -e "  ${GREEN}1.${PLAIN} 使用官方源安装"
-               echo -e "  ${GREEN}2.${PLAIN} 使用阿里云镜像源安装 (--mirror Aliyun)"
+               echo -e "  ${GREEN}2.${PLAIN} 使用阿里云镜像源安装 (多源自动重试)"
+               echo -e "  ${GREEN}3.${PLAIN} 使用 LinuxMirrors 一键安装 (推荐国内环境)"
                echo -e "  ${YELLOW}0.${PLAIN} 取消"
                echo -e "${YELLOW}============================================${PLAIN}"
-               read -r -p "请选择 [1/2/0]: " docker_choice
+               read -r -p "请选择 [1/2/3/0]: " docker_choice
                case "$docker_choice" in
                    1) run_script "https://get.docker.com" "get-docker.sh" "" ;;
-                   2) run_script "https://get.docker.com" "get-docker.sh" "docker --mirror Aliyun" ;;
+                   2) install_docker_aliyun ;;
+                   3) run_script "https://linuxmirrors.cn/docker.sh" "docker-mirrors.sh" "" ;;
                    0) yellow "已取消安装 Docker" ;;
                    *) red "无效选项，已取消" ;;
                esac
