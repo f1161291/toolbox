@@ -1,6 +1,7 @@
 services:
   filebrowser:
-    image: filebrowser/filebrowser    # 使用官方的 FileBrowser 镜像                     # 指定以 root 用户运行容器（UID=0, GID=0）
+    image: filebrowser/filebrowser    # 使用官方的 FileBrowser 镜像  
+    user: "0:0" # 指定以 root 用户运行容器（UID=0, GID=0）
     container_name: filebrowser       # 容器名称为 filebrowser，方便管理
     ports:
       - "8680:80"                     # 将宿主机的 8680 端口映射到容器的 80 端# 浏览器访问 http://宿主机IP:8680 即可使用 FileBrowser
