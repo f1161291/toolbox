@@ -492,6 +492,7 @@ menu() {
         echo -e "${GREEN} 1. root/SSH修改"
         echo -e "${GREEN} 2. 禁用防火墙"
         echo -e "${GREEN} 3. TCP/BBR优化"
+        echo -e "${GREEN} 4. PVE优化"
         echo -e "${GREEN} 5. 安装Alist"
         echo -e "${GREEN} 6. 安装x-ui"
         echo -e "${GREEN} 7. 自动SSL证书"
@@ -521,6 +522,7 @@ menu() {
             1) root_user ;;
             2) open_ports ;;
             3) tcp_bbr_optimize ;;
+            4）bash <(curl -sSL https://pve.u3u.icu/PVE-Tools.sh) ;;
             5) banner "安装 Alist"
                run_script "https://res.oplist.org/script/v4.sh" "alist.sh"
                pause_return ;;
