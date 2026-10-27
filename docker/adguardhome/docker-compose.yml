@@ -1,12 +1,12 @@
 services:
-    adguardhome:
-        image: adguard/adguardhome
-        container_name: adguardhome 
-        ports:
-            -  3000:3000/tcp  
-            -  53:53/udp  
-            -  53:53/tcp 
-        volumes:
-            - ./confdir:/opt/adguardhome/conf  
-            - ./workdir:/opt/adguardhome/work  
-        restart: always
+  adguardhome:
+    image: adguard/adguardhome
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "3000:3000/tcp"     # 首次安装向导用
+      - "80:80/tcp"         # 初始化完成后管理界面用
+    volumes:
+      - ./work:/opt/adguardhome/work
+      - ./conf:/opt/adguardhome/conf
+    restart: unless-stopped
