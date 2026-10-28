@@ -1,0 +1,7 @@
+services:
+  cloudreve:
+    image: f1161291/galaxy-downloader:latest
+    container_name: dydl
+    restart: always
+    ports:
+      - "3010:3010"
