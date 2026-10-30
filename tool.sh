@@ -522,7 +522,7 @@ menu() {
             1) root_user ;;
             2) open_ports ;;
             3) tcp_bbr_optimize ;;
-            4）bash <(curl -sSL https://pve.u3u.icu/PVE-Tools.sh) ;;
+            4) bash <(curl -sSL https://pve.u3u.icu/PVE-Tools.sh) ;;
             5) banner "安装 Alist"
                run_script "https://res.oplist.org/script/v4.sh" "alist.sh"
                pause_return ;;
