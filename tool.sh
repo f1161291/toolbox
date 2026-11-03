@@ -527,7 +527,7 @@ menu() {
                run_script "https://res.oplist.org/script/v4.sh" "alist.sh"
                pause_return ;;
             6) banner "安装 x-ui"
-               run_script "https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh" "x-ui.sh"
+               run_script "https://raw.githubusercontent.com/f1161291/x-ui/master/install.sh" "x-ui.sh"
                pause_return ;;
             7) banner "自动 SSL 证书"
                if ! type -P git >/dev/null 2>&1; then
