@@ -1,6 +1,6 @@
 services:
   webssh:
-    image: eooce/webssh:latest
+    image: cmliu/webssh:latest
     container_name: webssh
     ports:
       - "222:8888"
