@@ -504,6 +504,7 @@ menu() {
         echo -e "${GREEN} e. Rclone"
         echo -e "${GREEN} f. Frp安装"
         echo -e "${GREEN} g. YAML下载"
+        echo -e "${GREEN} h. Caddy安装"        
         echo -e "${GREEN} i. Pve-Debian"
         echo -e "${GREEN} j. Docker加速"
         echo -e "${GREEN} l. LXC容器"
