@@ -570,6 +570,9 @@ menu() {
                    red "未安装 git，无法下载"
                fi
                pause_return ;;
+            h) banner "安装 Caddy"
+               run_script "curl -fL --retry 3 https://raw.githubusercontent.com/AiLi1337/caddy_emby/main/install_caddy_emby.sh -o caddy_emby.sh" "caddy_emby.sh"
+               pause_return ;;               
             i) banner "Pve-Debian"
                run_script "https://js.xiray.cc.cd/https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh" "pve-debian.sh"
                pause_return ;;
