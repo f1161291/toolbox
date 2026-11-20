@@ -657,7 +657,6 @@ menu() {
         echo -e "${GREEN} m. Milivpn"
         echo -e "${GREEN} H. Mihomo"
         echo -e "${GREEN} u. 脚本更新"
-        echo -e "${GREEN} v. 下载加速设置"
         echo -e "${GREEN} x. 一键换源"
         echo -e "${GREEN} z. Docker"
         echo -e "${RED}dd. DD系统"
@@ -762,7 +761,6 @@ menu() {
             u) banner "脚本更新（下载并运行最新版）"
                run_script "https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh" "tool-latest.sh"
                pause_return ;;
-            v) ask_accel; pause_return ;;
             x) banner "一键换源"
                run_script "https://linuxmirrors.cn/main.sh" "mirrors.sh"
                pause_return ;;
