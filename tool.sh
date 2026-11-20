@@ -36,19 +36,8 @@ check_root() {
     return 0
 }
 
-# 以 root 身份执行命令（已是 root 则直接执行，避免无 sudo 环境报错）
-run_as_root() {
-    if [[ $EUID -eq 0 ]]; then
-        "$@"
-    elif type -P sudo >/dev/null 2>&1; then
-        sudo "$@"
-    else
-        red "需要 root 权限且未找到 sudo"
-        return 1
-    fi
-}
-
-# 设置 sshd_config 选项：删除旧配置行并插入到首个 Match 块之前（若存在）
+# 设置 sshd 选项：删除旧配置行并插入到首个 Match 块之前（若存在）
+# 仅在系统不支持 sshd_config.d Include 时作为回退使用
 sshd_set_option() {
     local conf="$1" key="$2" value="$3" line="$2 $3"
     local tmp="${conf}.tmp.$$"
@@ -63,6 +52,71 @@ sshd_set_option() {
         END { if (!done) print line }
     ' "$conf" > "$tmp" || { rm -f "$tmp"; return 1; }
     cat "$tmp" > "$conf" && rm -f "$tmp"
+}
+
+# 应用 sshd 配置：优先写入 drop-in 文件（00- 前缀保证 first-value 优先，
+# 避免被 /etc/ssh/sshd_config.d/*.conf 中的 cloud-init 等配置覆盖），
+# 并在重启前校验语法与实际生效值，任何一步失败都回滚。
+sshd_apply_options() {
+    local conf=/etc/ssh/sshd_config
+    local dropin_dir=/etc/ssh/sshd_config.d
+    local dropin="$dropin_dir/00-cc-tool.conf"
+    local port="$1"
+    local bak dropin_bak
+    bak=$(mktemp 2>/dev/null || echo "/tmp/sshd_config.bak.$$")
+    dropin_bak=$(mktemp 2>/dev/null || echo "/tmp/sshd_dropin.bak.$$")
+
+    if ! cp -f "$conf" "$bak" 2>/dev/null; then
+        red "备份 SSH 配置失败"
+        return 1
+    fi
+    : > "$dropin_bak"
+    [[ -f "$dropin" ]] && cp -f "$dropin" "$dropin_bak" 2>/dev/null
+
+    if grep -qE '^[[:space:]]*Include[[:space:]].*sshd_config\.d' "$conf" 2>/dev/null; then
+        mkdir -p "$dropin_dir" 2>/dev/null
+        cat > "$dropin" <<EOF
+# 由 cc tool 生成，请勿手动修改
+Port $port
+PermitRootLogin yes
+PasswordAuthentication yes
+EOF
+    else
+        rm -f "$dropin"
+        sshd_set_option "$conf" "Port" "$port"
+        sshd_set_option "$conf" "PermitRootLogin" "yes"
+        sshd_set_option "$conf" "PasswordAuthentication" "yes"
+    fi
+
+    local sshd_bin
+    sshd_bin=$(type -P sshd 2>/dev/null || echo /usr/sbin/sshd)
+    if [[ -x "$sshd_bin" ]]; then
+        local ok=1
+        "$sshd_bin" -t >/dev/null 2>&1 || ok=0
+        if [[ $ok -eq 1 ]]; then
+            local eff_port eff_root eff_pw
+            eff_port=$("$sshd_bin" -T 2>/dev/null | awk '$1=="port"{print $2; exit}')
+            eff_root=$("$sshd_bin" -T 2>/dev/null | awk '$1=="permitrootlogin"{print $2; exit}')
+            eff_pw=$("$sshd_bin" -T 2>/dev/null | awk '$1=="passwordauthentication"{print $2; exit}')
+            if [[ "$eff_port" != "$port" || "$eff_root" != "yes" || "$eff_pw" != "yes" ]]; then
+                yellow "实际生效值与预期不符: port=$eff_port, root=$eff_root, password=$eff_pw"
+                ok=0
+            fi
+        fi
+        if [[ $ok -ne 1 ]]; then
+            red "sshd 配置校验失败，已回滚！"
+            cat "$bak" > "$conf"
+            if [[ -s "$dropin_bak" ]]; then
+                cat "$dropin_bak" > "$dropin"
+            else
+                rm -f "$dropin"
+            fi
+            rm -f "$bak" "$dropin_bak"
+            return 1
+        fi
+    fi
+    rm -f "$bak" "$dropin_bak"
+    return 0
 }
 
 # ==================== 工具函数 ====================
@@ -85,20 +139,22 @@ generate_password() {
 }
 
 # 下载远程脚本到本地，成功返回 0
+# 安全约定：保留 TLS 证书校验，禁止中间人替换待执行的 root 脚本
 # 用法: download_script <url> <本地文件>
 download_script() {
     local url="$1"
     local file="$2"
     rm -f "$file"
-    if type -P wget >/dev/null 2>&1; then
-        wget --no-check-certificate -q "$url" -O "$file"
-    elif type -P curl >/dev/null 2>&1; then
-        curl -fsSL --insecure -o "$file" "$url"
+    local ok=1
+    if type -P curl >/dev/null 2>&1; then
+        curl -fsSL --retry 2 -o "$file" "$url" || ok=0
+    elif type -P wget >/dev/null 2>&1; then
+        wget -q --tries=2 "$url" -O "$file" || ok=0
     else
-        red "wget 和 curl 均不可用"
+        red "curl 和 wget 均不可用"
         return 1
     fi
-    if [[ ! -s "$file" ]]; then
+    if [[ $ok -ne 1 || ! -s "$file" ]]; then
         red "下载失败或文件为空: $url"
         rm -f "$file"
         return 1
@@ -120,6 +176,8 @@ run_script() {
     download_script "$url" "$target" || return 1
 
     local ret=0
+    # args 有意不加引号，用于支持多个参数
+    # shellcheck disable=SC2086
     if [[ -t 0 ]]; then
         $interp "$target" $args
         ret=$?
@@ -135,42 +193,36 @@ run_script() {
 }
 
 # ==================== 依赖安装 ====================
+# 只需 curl 或 wget 任一即可（download_script 优先使用 curl）
 ensure_deps() {
-    local missing=()
-    type -P curl >/dev/null 2>&1 || missing+=(curl)
-    type -P wget >/dev/null 2>&1 || missing+=(wget)
-    [[ ${#missing[@]} -eq 0 ]] && return 0
-
+    if type -P curl >/dev/null 2>&1 || type -P wget >/dev/null 2>&1; then
+        return 0
+    fi
+    yellow "未检测到 curl/wget，正在安装 curl..."
     local os
     os=$(detect_os)
-    yellow "正在安装依赖: ${missing[*]}"
     case "$os" in
         Debian|Ubuntu)
             apt -y update >/dev/null 2>&1
-            apt -y install "${missing[@]}" >/dev/null 2>&1
+            apt -y install curl >/dev/null 2>&1
             ;;
         CentOS)
-            yum -y install epel-release >/dev/null 2>&1
-            yum -y install "${missing[@]}" >/dev/null 2>&1
+            yum -y install curl >/dev/null 2>&1
             ;;
         Alpine)
-            apk update -f >/dev/null 2>&1
-            apk add -f "${missing[@]}" >/dev/null 2>&1
+            apk add --no-cache curl >/dev/null 2>&1
+            ;;
+        *)
+            red "无法识别系统，请手动安装 curl 或 wget"
+            return 1
             ;;
     esac
-
-    for pkg in "${missing[@]}"; do
-        if ! type -P "$pkg" >/dev/null 2>&1; then
-            red "依赖安装失败: $pkg"
-            return 1
-        fi
-    done
-    green "依赖安装完成"
-
-    # git 供 g/h 等选项使用，缺失时给出提示而非直接失败
-    if ! type -P git >/dev/null 2>&1; then
-        yellow "提示：未检测到 git，部分选项（YAML下载、Mihomo）将不可用"
+    if ! type -P curl >/dev/null 2>&1 && ! type -P wget >/dev/null 2>&1; then
+        red "依赖安装失败: 需要 curl 或 wget"
+        return 1
     fi
+    green "依赖安装完成"
+    return 0
 }
 
 # ==================== 系统检测 ====================
@@ -218,21 +270,14 @@ root_user() {
         return 1
     fi
 
-    ensure_deps || { pause_return; return 1; }
-
-    local pkg_update="" pkg_install=""
-    case "$os" in
-        Debian|Ubuntu) pkg_update="apt -y update"; pkg_install="apt -y install";;
-        CentOS) pkg_update="yum -y update"; pkg_install="yum -y install";;
-        Alpine) pkg_update="apk update -f"; pkg_install="apk add -f";;
-    esac
-
     if [[ ! -f /etc/ssh/sshd_config ]]; then
-        $pkg_update && $pkg_install openssh-server
+        yellow "未检测到 sshd 配置，正在安装 openssh-server..."
+        case "$os" in
+            Debian|Ubuntu) apt -y update >/dev/null 2>&1; apt -y install openssh-server >/dev/null 2>&1 ;;
+            CentOS) yum -y install openssh-server >/dev/null 2>&1 ;;
+            Alpine) apk add --no-cache openssh-server >/dev/null 2>&1 ;;
+        esac
     fi
-
-    chattr -i /etc/passwd /etc/shadow 2>/dev/null
-    chattr -a /etc/passwd /etc/shadow 2>/dev/null
 
     local sshport=22
     read -r -p "输入SSH端口（默认22）: " input_port
@@ -244,42 +289,35 @@ root_user() {
 
     local password
     password=$(generate_password)
-    read -r -p "输入root密码（留空自动生成）: " input_pass
+    read -r -p "输入root密码（留空自动生成16位随机密码）: " input_pass
     [[ -n "$input_pass" ]] && password="$input_pass"
 
-    if ! printf 'root:%s\n' "$password" | chpasswd; then
+    # 仅在文件确实带不可变/只追加属性时解除，操作结束后恢复
+    local attr_lock=""
+    if type -P lsattr >/dev/null 2>&1; then
+        local flags
+        flags=$(lsattr /etc/passwd 2>/dev/null | awk '{print $1}')
+        [[ "$flags" == *i* ]] && attr_lock="${attr_lock} i"
+        [[ "$flags" == *a* ]] && attr_lock="${attr_lock} a"
+    fi
+    [[ -n "$attr_lock" ]] && chattr -i -a /etc/passwd /etc/shadow 2>/dev/null
+
+    local pass_ok=1
+    printf 'root:%s\n' "$password" | chpasswd 2>/dev/null || pass_ok=0
+    for a in $attr_lock; do
+        chattr "+$a" /etc/passwd /etc/shadow 2>/dev/null
+    done
+    if [[ $pass_ok -ne 1 ]]; then
         red "密码设置失败！"
         pause_return
         return 1
     fi
 
-    local conf=/etc/ssh/sshd_config
-    local conf_bak
-    conf_bak=$(mktemp 2>/dev/null || echo "/tmp/sshd_config.bak.$$")
-    if ! cp -f "$conf" "$conf_bak"; then
-        red "备份 SSH 配置失败"
+    # 配置校验与回滚在 sshd_apply_options 内部完成
+    if ! sshd_apply_options "$sshport"; then
         pause_return
         return 1
     fi
-    sshd_set_option "$conf" "Port" "$sshport" || { red "写入 SSH 端口失败"; rm -f "$conf_bak"; pause_return; return 1; }
-    sshd_set_option "$conf" "PermitRootLogin" "yes" || { red "写入 PermitRootLogin 失败"; rm -f "$conf_bak"; pause_return; return 1; }
-    sshd_set_option "$conf" "PasswordAuthentication" "yes" || { red "写入 PasswordAuthentication 失败"; rm -f "$conf_bak"; pause_return; return 1; }
-
-    # 配置校验失败则回滚，避免重启后无法连接
-    local sshd_bin
-    sshd_bin=$(type -P sshd 2>/dev/null || echo /usr/sbin/sshd)
-    if [[ -x "$sshd_bin" ]]; then
-        local sshd_err
-        if ! sshd_err=$("$sshd_bin" -t 2>&1); then
-            red "sshd 配置校验失败，已回滚！"
-            red "$sshd_err"
-            cat "$conf_bak" > "$conf"
-            rm -f "$conf_bak"
-            pause_return
-            return 1
-        fi
-    fi
-    rm -f "$conf_bak"
 
     if ! restart_ssh; then
         red "SSH 服务重启失败，请手动检查！"
@@ -293,42 +331,63 @@ root_user() {
     green "地址: $ip:$sshport"
     green "用户: root"
     green "密码: $password"
-    yellow "请妥善保存！"
+    yellow "请妥善保存！建议登录后立即修改密码，并限制 SSH 来源 IP。"
 
     pause_return
 }
 
+# 放行指定端口：不清空现有规则、不改默认策略、不动 Docker 链
 open_ports() {
     check_root || { pause_return; return 1; }
 
-    systemctl stop firewalld 2>/dev/null; systemctl disable firewalld 2>/dev/null
-    ufw disable 2>/dev/null
+    yellow "本选项只放行指定端口，不清空现有规则、不影响容器网络"
+    read -r -p "输入要放行的端口（空格分隔，留空默认仅放行22）: " port_input
 
-    # Armbian 默认无 SELinux，仅在存在时处理
-    if type -P setenforce >/dev/null 2>&1; then
-        setenforce 0 2>/dev/null
-    fi
-    if [[ -f /etc/selinux/config ]]; then
-        sed -i 's/^SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config 2>/dev/null
-    fi
-
-    local table
-    for table in filter nat mangle raw; do
-        iptables -t "$table" -F 2>/dev/null
-        iptables -t "$table" -X 2>/dev/null
+    local ports="" p
+    for p in $port_input; do
+        if validate_port "$p"; then
+            ports="$ports $p"
+        else
+            yellow "忽略无效端口: $p"
+        fi
     done
+    ports="${ports:- 22}"
 
-    iptables -P INPUT ACCEPT 2>/dev/null
-    iptables -P FORWARD ACCEPT 2>/dev/null
-    iptables -P OUTPUT ACCEPT 2>/dev/null
-
-    netfilter-persistent save 2>/dev/null
-    service iptables save 2>/dev/null
-    if [[ -d /etc/sysconfig ]]; then
-        ip6tables-save 2>/dev/null > /etc/sysconfig/ip6tables
+    local ok=1
+    if systemctl is-active --quiet firewalld 2>/dev/null; then
+        for p in $ports; do
+            firewall-cmd --permanent --add-port="${p}/tcp" >/dev/null 2>&1 || ok=0
+        done
+        firewall-cmd --reload >/dev/null 2>&1 || ok=0
+    elif type -P ufw >/dev/null 2>&1 && ufw status 2>/dev/null | grep -q '^Status: active'; then
+        for p in $ports; do
+            ufw allow "${p}/tcp" >/dev/null 2>&1 || ok=0
+        done
+    elif type -P iptables >/dev/null 2>&1; then
+        iptables -C INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null \
+            || iptables -I INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null
+        for p in $ports; do
+            if ! iptables -C INPUT -p tcp --dport "$p" -j ACCEPT 2>/dev/null; then
+                iptables -I INPUT -p tcp --dport "$p" -j ACCEPT 2>/dev/null || ok=0
+            fi
+        done
+        if type -P netfilter-persistent >/dev/null 2>&1; then
+            netfilter-persistent save >/dev/null 2>&1
+        elif [[ -d /etc/sysconfig ]]; then
+            iptables-save > /etc/sysconfig/iptables 2>/dev/null
+        fi
+    else
+        yellow "未检测到 firewalld/ufw/iptables，未做任何更改"
+        pause_return
+        return 1
     fi
 
-    green "防火墙已完全放行！"
+    if [[ $ok -eq 1 ]]; then
+        green "已放行端口:${ports}"
+        yellow "现有规则、默认策略与 Docker 链均未改动"
+    else
+        yellow "部分规则添加失败，请手动检查"
+    fi
     pause_return
 }
 
@@ -336,52 +395,56 @@ tcp_bbr_optimize() {
     check_root || { pause_return; return 1; }
 
     mkdir -p /etc/sysctl.d
-    cat > /etc/sysctl.d/99-optimize.conf << 'EOF'
-# 文件系统优化
-fs.file-max=1000000
-fs.inotify.max_user_instances=65536
-# 网络转发
-net.ipv4.conf.all.route_localnet=1
+    local conf=/etc/sysctl.d/99-cc-tool.conf
+    local bak
+    bak=$(mktemp 2>/dev/null || echo "/tmp/sysctl.bak.$$")
+    if [[ -f "$conf" ]]; then
+        cp -f "$conf" "$bak" 2>/dev/null || : > "$bak"
+    else
+        : > "$bak"
+    fi
+
+    cat > "$conf" << 'EOF'
+# 由 cc tool 生成
+# 文件系统
+fs.file-max=65535
+fs.inotify.max_user_instances=1024
+# 网络转发（容器/代理需要）
 net.ipv4.ip_forward=1
 net.ipv4.conf.all.forwarding=1
 net.ipv4.conf.default.forwarding=1
 net.ipv6.conf.all.forwarding=1
-net.ipv6.conf.default.forwarding=1
-net.ipv6.conf.lo.forwarding=1
-# TCP优化
+# TCP 基础优化
 net.ipv4.tcp_syncookies=1
-net.ipv4.tcp_tw_reuse=1
 net.ipv4.tcp_fin_timeout=15
-net.ipv4.tcp_max_tw_buckets=32768
-net.ipv4.tcp_max_syn_backlog=131072
-net.core.netdev_max_backlog=131072
-net.core.somaxconn=32768
+net.ipv4.tcp_max_syn_backlog=8192
+net.core.netdev_max_backlog=8192
+net.core.somaxconn=4096
 net.ipv4.tcp_keepalive_time=300
-net.ipv4.tcp_keepalive_probes=3
-net.ipv4.tcp_keepalive_intvl=30
-net.ipv4.tcp_fastopen=3
-# 内存缓冲区
-net.core.rmem_max=33554432
-net.core.wmem_max=33554432
-net.ipv4.tcp_rmem=4096 87380 33554432
-net.ipv4.tcp_wmem=4096 16384 33554432
-net.ipv4.udp_rmem_min=8192
-net.ipv4.udp_wmem_min=8192
-# BBR拥塞控制
+# 缓冲区
+net.core.rmem_max=16777216
+net.core.wmem_max=16777216
+net.ipv4.tcp_rmem=4096 87380 16777216
+net.ipv4.tcp_wmem=4096 16384 16777216
+# BBR
 net.core.default_qdisc=fq
 net.ipv4.tcp_congestion_control=bbr
 EOF
 
-    if ! sysctl -p /etc/sysctl.d/99-optimize.conf >/dev/null 2>&1; then
-        yellow "部分参数应用失败（可能内核不支持），已忽略"
+    if ! sysctl -p "$conf" >/dev/null 2>&1; then
+        yellow "部分参数应用失败（内核可能不支持），正在回滚该文件"
+        cat "$bak" > "$conf" 2>/dev/null || rm -f "$conf"
+        rm -f "$bak"
+        pause_return
+        return 1
     fi
-    sysctl --system >/dev/null 2>&1
+    rm -f "$bak"
 
-    green "TCP/BBR优化已完成！"
+    green "TCP/BBR 优化已完成！"
     if [[ "$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null)" == "bbr" ]]; then
         green "BBR 已加载"
     else
-        yellow "BBR 未加载，可能需要重启"
+        yellow "BBR 未加载，可能需要重启或内核不支持"
     fi
     pause_return
 }
@@ -393,24 +456,10 @@ install_frp() {
 
     mkdir -p "$WORK_DIR"
     if [[ "$frp_type" == "frps" ]]; then
-        if download_script \
-            "https://raw.githubusercontent.com/mvscode/frps-onekey/master/install-frps.sh" \
-            "$WORK_DIR/install-frps.sh"; then
-            green "frps 脚本下载成功，开始安装..."
-            if [[ -t 0 ]]; then
-                bash "$WORK_DIR/install-frps.sh" install
-            elif [[ -r /dev/tty ]]; then
-                bash "$WORK_DIR/install-frps.sh" install < /dev/tty
-            else
-                bash "$WORK_DIR/install-frps.sh" install
-            fi
-            rm -f "$WORK_DIR/install-frps.sh"
-        else
-            red "frps 脚本下载失败，请检查网络连接"
-        fi
+        run_script "https://raw.githubusercontent.com/mvscode/frps-onekey/master/install-frps.sh" "install-frps.sh" "install"
     else
-        if ! type -P curl >/dev/null 2>&1; then
-            red "frpc 安装需要 curl"
+        if ! type -P curl >/dev/null 2>&1 && ! type -P wget >/dev/null 2>&1; then
+            red "frpc 安装需要 curl 或 wget"
         else
             run_script "https://atusu.cn/frp/install_frpc.sh" "install_frpc.sh"
         fi
@@ -466,7 +515,6 @@ install_docker_aliyun() {
         return 1
     fi
 
-    # 执行脚本，并传入阿里云镜像参数
     if [[ -t 0 ]]; then
         bash "$script_file" --mirror Aliyun
     elif [[ -r /dev/tty ]]; then
@@ -490,7 +538,7 @@ menu() {
         echo -e "${RED}=================================="
         echo -e "                                   "
         echo -e "${GREEN} 1. root/SSH修改"
-        echo -e "${GREEN} 2. 禁用防火墙"
+        echo -e "${GREEN} 2. 放行指定端口"
         echo -e "${GREEN} 3. TCP/BBR优化"
         echo -e "${GREEN} 4. PVE优化"
         echo -e "${GREEN} 5. 安装Alist"
@@ -504,13 +552,13 @@ menu() {
         echo -e "${GREEN} e. Rclone"
         echo -e "${GREEN} f. Frp安装"
         echo -e "${GREEN} g. YAML下载"
-        echo -e "${GREEN} h. Caddy安装"        
+        echo -e "${GREEN} h. Caddy安装"
         echo -e "${GREEN} i. Pve-Debian"
         echo -e "${GREEN} j. Docker加速"
         echo -e "${GREEN} l. LXC容器"
         echo -e "${GREEN} n. 1Panel面板"
         echo -e "${GREEN} m. Milivpn"
-        echo -e "${GREEN} h. Mihomo"
+        echo -e "${GREEN} H. Mihomo"
         echo -e "${GREEN} u. 脚本更新"
         echo -e "${GREEN} x. 一键换源"
         echo -e "${GREEN} z. Docker"
@@ -523,7 +571,7 @@ menu() {
             1) root_user ;;
             2) open_ports ;;
             3) tcp_bbr_optimize ;;
-            4) bash <(curl -sSL https://pve.u3u.icu/PVE-Tools.sh) ;;
+            4) banner "PVE 优化"; run_script "https://pve.u3u.icu/PVE-Tools.sh" "pve-tools.sh"; pause_return ;;
             5) banner "安装 Alist"
                run_script "https://res.oplist.org/script/v4.sh" "alist.sh"
                pause_return ;;
@@ -535,7 +583,7 @@ menu() {
                    case "$(detect_os)" in
                        Debian|Ubuntu) apt -y install git >/dev/null 2>&1 ;;
                        CentOS) yum -y install git >/dev/null 2>&1 ;;
-                       Alpine) apk add git >/dev/null 2>&1 ;;
+                       Alpine) apk add --no-cache git >/dev/null 2>&1 ;;
                    esac
                fi
                run_script "https://raw.githubusercontent.com/slobys/SSL-Renewal/main/acme.sh" "acme.sh"
@@ -556,9 +604,7 @@ menu() {
                run_script "https://ailg.ggbond.org/cd2.sh" "cd2.sh"
                pause_return ;;
             e) banner "安装 Rclone"
-               if check_root; then
-                   run_script "https://rclone.org/install.sh" "rclone.sh"
-               fi
+               check_root && run_script "https://rclone.org/install.sh" "rclone.sh"
                pause_return ;;
             f) frp_menu ;;
             g) banner "YAML 下载"
@@ -571,11 +617,11 @@ menu() {
                    red "未安装 git，无法下载"
                fi
                pause_return ;;
-            h) banner "安装 Caddy"
-               run_script "curl -fL --retry 3 https://raw.githubusercontent.com/AiLi1337/caddy_emby/main/install_caddy_emby.sh -o caddy_emby.sh" "caddy_emby.sh"
-               pause_return ;;               
+            h) banner "安装 Caddy (caddy_emby)"
+               run_script "https://raw.githubusercontent.com/AiLi1337/caddy_emby/main/install_caddy_emby.sh" "caddy_emby.sh"
+               pause_return ;;
             i) banner "Pve-Debian"
-               run_script "https://js.xiray.de5.net/https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh" "pve-debian.sh"
+               run_script "https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh" "pve-debian.sh"
                pause_return ;;
             j) banner "Docker 加速"
                run_script "https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh" "hubproxy.sh" "" sh
@@ -589,28 +635,21 @@ menu() {
             m) banner "安装 Milivpn"
                run_script "https://raw.githubusercontent.com/baoweise-bot/aimili-vpngate/main/install.sh" "milivpn.sh"
                pause_return ;;
-            u) banner "脚本更新"
-               apt update -y >/dev/null 2>&1
-               run_script "https://js.xiray.de5.net/https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh" "update.sh"
-               pause_return ;;
-            x) banner "一键换源"
-               run_script "https://linuxmirrors.cn/main.sh" "mirrors.sh"
-               pause_return ;;
-            h) banner "安装 Mihomo"
+            H|h2) banner "安装 Mihomo"
                if ! type -P git >/dev/null 2>&1; then
                    case "$(detect_os)" in
                        Debian|Ubuntu) apt -y install git >/dev/null 2>&1 ;;
                        CentOS) yum -y install git >/dev/null 2>&1 ;;
-                       Alpine) apk add git >/dev/null 2>&1 ;;
+                       Alpine) apk add --no-cache git >/dev/null 2>&1 ;;
                    esac
                fi
                case "$(detect_os)" in
                    Debian|Ubuntu) apt -y install unzip >/dev/null 2>&1 ;;
                    CentOS) yum -y install unzip >/dev/null 2>&1 ;;
-                   Alpine) apk add unzip >/dev/null 2>&1 ;;
+                   Alpine) apk add --no-cache unzip >/dev/null 2>&1 ;;
                esac
                rm -rf "$WORK_DIR/clash-for-linux-install"
-               if git clone --branch master --depth 1 https://js.xiray.de5.net/https://github.com/nelvko/clash-for-linux-install.git "$WORK_DIR/clash-for-linux-install" 2>/dev/null; then
+               if git clone --branch master --depth 1 https://github.com/nelvko/clash-for-linux-install.git "$WORK_DIR/clash-for-linux-install" 2>/dev/null; then
                    if [[ -t 0 ]]; then
                        bash "$WORK_DIR/clash-for-linux-install/install.sh"
                    elif [[ -r /dev/tty ]]; then
@@ -622,12 +661,18 @@ menu() {
                    red "克隆失败，请检查网络或 git 是否已安装"
                fi
                pause_return ;;
+            u) banner "脚本更新（下载并运行最新版）"
+               run_script "https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh" "tool-latest.sh"
+               pause_return ;;
+            x) banner "一键换源"
+               run_script "https://linuxmirrors.cn/main.sh" "mirrors.sh"
+               pause_return ;;
             z) banner "安装 Docker"
                echo -e "  ${GREEN}1.${PLAIN} 使用官方源安装"
                echo -e "  ${GREEN}2.${PLAIN} 使用 LinuxMirrors 一键安装 (推荐国内环境)"
                echo -e "  ${YELLOW}0.${PLAIN} 取消"
                echo -e "${YELLOW}============================================${PLAIN}"
-               read -r -p "请选择 [1/2/3/0]: " docker_choice
+               read -r -p "请选择 [1/2/0]: " docker_choice
                case "$docker_choice" in
                    1) run_script "https://get.docker.com" "get-docker.sh" "" ;;
                    2) run_script "https://linuxmirrors.cn/docker.sh" "docker-mirrors.sh" "" ;;
@@ -635,8 +680,13 @@ menu() {
                    *) red "无效选项，已取消" ;;
                esac
                pause_return ;;
-            dd) banner "DD 系统"
-                run_script "https://raw.githubusercontent.com/f1161291/other/refs/heads/main/dd.sh" "dd.sh"
+            dd) banner "DD 系统（不可逆操作，请确认已备份数据）"
+                read -r -p "确认继续请输入 yes: " dd_confirm
+                if [[ "$dd_confirm" == "yes" ]]; then
+                    run_script "https://raw.githubusercontent.com/f1161291/other/refs/heads/main/dd.sh" "dd.sh"
+                else
+                    yellow "已取消 DD 系统"
+                fi
                 pause_return ;;
             q|Q) green "已退出脚本"; exit 0 ;;
             *) red "无效选项！"; sleep 1 ;;
@@ -652,5 +702,16 @@ if [[ ! -t 0 ]] && [[ -r /dev/tty ]]; then
     exec < /dev/tty
 fi
 
-ensure_deps >/dev/null 2>&1
+# 依赖检查：明确输出，不再静默吞掉错误
+if ! ensure_deps; then
+    red "依赖检查未通过，脚本无法继续运行"
+    exit 1
+fi
+
+# 本工具箱绝大多数选项需要 root，非 root 直接退出，避免静默失败
+if [[ $EUID -ne 0 ]]; then
+    red "请以 root 用户运行本脚本（例如: sudo bash tool.sh）"
+    exit 1
+fi
+
 menu
