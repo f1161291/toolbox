@@ -52,6 +52,10 @@ accel_url() {
 
 # 运行时询问是否需要代理加速（国内/本地部署启用，境外服务器直连）
 ask_accel() {
+    # 若已由父进程选过（如选项 u 脚本更新拉起的新实例），直接沿用，不再重复询问
+    if [[ "${CC_ACCEL_SELECTED:-0}" == "1" ]]; then
+        return 0
+    fi
     echo
     banner "下载加速设置"
     echo "脚本需从 GitHub 下载安装脚本，请选择下载方式："
@@ -86,6 +90,9 @@ ask_accel() {
         "") yellow "保持当前设置：${ACCEL_NAME}" ;;
         *) yellow "无效选项，保持当前设置：${ACCEL_NAME}" ;;
     esac
+    # 标记为已选择并导出，供脚本更新拉起的新脚本实例继承，避免重复询问
+    CC_ACCEL_SELECTED=1
+    export CC_ACCEL_SELECTED ACCEL_PREFIX ACCEL_NAME
 }
 
 # ==================== 权限检查 ====================
