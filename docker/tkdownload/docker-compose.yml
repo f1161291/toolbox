@@ -1,0 +1,7 @@
+services:
+  parse-video-py:
+    image: wujunwei928/parse-video-py
+    container_name: parse-video-py
+    restart: always
+    ports:
+      - "8000:8000"
