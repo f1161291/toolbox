@@ -7,6 +7,11 @@ readonly PLAIN='\033[0m'
 
 readonly WORK_DIR="/tmp/cc-tool"
 
+# ==================== 下载加速配置 ====================
+# 运行时由用户选择：境外服务器直连、国内环境启用 GitHub 反代加速
+ACCEL_PREFIX=""        # 加速站点前缀，例如 https://js.xiray.de5.net/
+ACCEL_NAME="直连 GitHub"
+
 # ==================== 颜色输出函数 ====================
 color_echo() {
     echo -e "${1}${2}${PLAIN}"
@@ -25,6 +30,62 @@ banner() {
 pause_return() {
     echo
     read -r -p "按回车键返回主菜单..." _
+}
+
+# ==================== 下载加速 ====================
+# 仅对 GitHub 系域名应用加速前缀；其它域名（阿里云、linuxmirrors 等）原样返回，
+# 避免把它们错误地拼到 GitHub 反代后面导致下载失败。
+accel_url() {
+    local url="$1"
+    [[ -z "$ACCEL_PREFIX" ]] && { echo "$url"; return 0; }
+    case "$url" in
+        https://github.com/*|https://raw.githubusercontent.com/*|\
+        https://objects.githubusercontent.com/*|https://gist.githubusercontent.com/*|\
+        https://codeload.github.com/*)
+            echo "${ACCEL_PREFIX}${url}"
+            ;;
+        *)
+            echo "$url"
+            ;;
+    esac
+}
+
+# 运行时询问是否需要代理加速（国内/本地部署启用，境外服务器直连）
+ask_accel() {
+    echo
+    banner "下载加速设置"
+    echo "脚本需从 GitHub 下载安装脚本，请选择下载方式："
+    echo "  · 国内本地部署：建议启用加速"
+    echo "  · 境外服务器：建议直连"
+    echo -e "  ${GREEN}1.${PLAIN} 直连 GitHub"
+    echo -e "  ${GREEN}2.${PLAIN} 启用加速（内置 js.xiray.de5.net）"
+    echo -e "  ${GREEN}3.${PLAIN} 自定义加速站点前缀"
+    local accel_choice custom_prefix
+    read -r -p "请选择 [1/2/3]: " accel_choice
+    case "$accel_choice" in
+        1)
+            ACCEL_PREFIX=""
+            ACCEL_NAME="直连 GitHub"
+            green "已选择：直连 GitHub"
+            ;;
+        2)
+            ACCEL_PREFIX="https://js.xiray.de5.net/"
+            ACCEL_NAME="加速(js.xiray.de5.net)"
+            green "已选择：加速 ${ACCEL_PREFIX}"
+            ;;
+        3)
+            read -r -p "输入加速前缀（需以 https:// 开头、以 / 结尾）: " custom_prefix
+            if [[ "$custom_prefix" =~ ^https://.*/$ ]]; then
+                ACCEL_PREFIX="$custom_prefix"
+                ACCEL_NAME="加速(${custom_prefix})"
+                green "已选择：加速 $ACCEL_PREFIX"
+            else
+                red "格式不正确（示例: https://ghproxy.net/），保持原设置"
+            fi
+            ;;
+        "") yellow "保持当前设置：${ACCEL_NAME}" ;;
+        *) yellow "无效选项，保持当前设置：${ACCEL_NAME}" ;;
+    esac
 }
 
 # ==================== 权限检查 ====================
@@ -142,7 +203,8 @@ generate_password() {
 # 安全约定：保留 TLS 证书校验，禁止中间人替换待执行的 root 脚本
 # 用法: download_script <url> <本地文件>
 download_script() {
-    local url="$1"
+    local url
+    url=$(accel_url "$1")
     local file="$2"
     rm -f "$file"
     local ok=1
@@ -155,12 +217,47 @@ download_script() {
         return 1
     fi
     if [[ $ok -ne 1 || ! -s "$file" ]]; then
+        # 加速失败时自动回退直连重试一次
+        if [[ -n "$ACCEL_PREFIX" ]]; then
+            yellow "加速下载失败，尝试直连: $1"
+            rm -f "$file"
+            url="$1"
+            ok=1
+            if type -P curl >/dev/null 2>&1; then
+                curl -fsSL --retry 2 -o "$file" "$url" || ok=0
+            elif type -P wget >/dev/null 2>&1; then
+                wget -q --tries=2 "$url" -O "$file" || ok=0
+            fi
+        fi
+    fi
+    if [[ $ok -ne 1 || ! -s "$file" ]]; then
         red "下载失败或文件为空: $url"
         rm -f "$file"
         return 1
     fi
     chmod +x "$file"
     return 0
+}
+
+# git clone：应用加速前缀，失败时回退直连
+# 用法: git_clone_accel <仓库URL> <目标目录> [额外git参数...]
+git_clone_accel() {
+    local repo="$1" dest="$2"
+    shift 2
+    local extra=("$@")
+    local clone_url
+    clone_url=$(accel_url "$repo")
+    if git clone "${extra[@]}" "$clone_url" "$dest" 2>/dev/null; then
+        return 0
+    fi
+    if [[ -n "$ACCEL_PREFIX" && "$clone_url" != "$repo" ]]; then
+        yellow "加速克隆失败，尝试直连: $repo"
+        rm -rf "$dest"
+        if git clone "${extra[@]}" "$repo" "$dest" 2>/dev/null; then
+            return 0
+        fi
+    fi
+    return 1
 }
 
 # 下载并运行脚本，自动处理非终端 stdin
@@ -534,7 +631,7 @@ menu() {
         echo -e "${RED}=================================="
         echo -e "${GREEN}          cc tool              "
         echo -e "${RED}        cc Linux一键运行脚本    "
-        echo -e "                                   "
+        echo -e "${YELLOW}下载模式: ${ACCEL_NAME}${PLAIN}"
         echo -e "${RED}=================================="
         echo -e "                                   "
         echo -e "${GREEN} 1. root/SSH修改"
@@ -560,6 +657,7 @@ menu() {
         echo -e "${GREEN} m. Milivpn"
         echo -e "${GREEN} H. Mihomo"
         echo -e "${GREEN} u. 脚本更新"
+        echo -e "${GREEN} v. 下载加速设置"
         echo -e "${GREEN} x. 一键换源"
         echo -e "${GREEN} z. Docker"
         echo -e "${RED}dd. DD系统"
@@ -610,7 +708,7 @@ menu() {
             g) banner "YAML 下载"
                if type -P git >/dev/null 2>&1; then
                    ( rm -rf /tmp/cc-tool/toolbox \
-                     && git clone --depth 1 https://github.com/f1161291/toolbox /tmp/cc-tool/toolbox \
+                     && git_clone_accel https://github.com/f1161291/toolbox /tmp/cc-tool/toolbox --depth 1 \
                      && green "已下载到 /tmp/cc-tool/toolbox" ) \
                        || red "克隆失败，请检查网络"
                else
@@ -649,7 +747,7 @@ menu() {
                    Alpine) apk add --no-cache unzip >/dev/null 2>&1 ;;
                esac
                rm -rf "$WORK_DIR/clash-for-linux-install"
-               if git clone --branch master --depth 1 https://github.com/nelvko/clash-for-linux-install.git "$WORK_DIR/clash-for-linux-install" 2>/dev/null; then
+               if git_clone_accel https://github.com/nelvko/clash-for-linux-install.git "$WORK_DIR/clash-for-linux-install" --branch master --depth 1; then
                    if [[ -t 0 ]]; then
                        bash "$WORK_DIR/clash-for-linux-install/install.sh"
                    elif [[ -r /dev/tty ]]; then
@@ -664,6 +762,7 @@ menu() {
             u) banner "脚本更新（下载并运行最新版）"
                run_script "https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh" "tool-latest.sh"
                pause_return ;;
+            v) ask_accel; pause_return ;;
             x) banner "一键换源"
                run_script "https://linuxmirrors.cn/main.sh" "mirrors.sh"
                pause_return ;;
@@ -713,5 +812,8 @@ if [[ $EUID -ne 0 ]]; then
     red "请以 root 用户运行本脚本（例如: sudo bash tool.sh）"
     exit 1
 fi
+
+# 启动时询问一次下载加速方式（之后可用菜单 v 随时切换）
+ask_accel
 
 menu
