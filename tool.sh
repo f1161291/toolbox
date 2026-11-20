@@ -591,7 +591,7 @@ menu() {
                pause_return ;;
             u) banner "脚本更新"
                apt update -y >/dev/null 2>&1
-               run_script "https://js.xiray.cc.cd/https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh" "update.sh"
+               run_script "https://js.xiray.de5.net/https://raw.githubusercontent.com/f1161291/toolbox/refs/heads/main/tool.sh" "update.sh"
                pause_return ;;
             x) banner "一键换源"
                run_script "https://linuxmirrors.cn/main.sh" "mirrors.sh"
