@@ -575,7 +575,7 @@ menu() {
                run_script "curl -fL --retry 3 https://raw.githubusercontent.com/AiLi1337/caddy_emby/main/install_caddy_emby.sh -o caddy_emby.sh" "caddy_emby.sh"
                pause_return ;;               
             i) banner "Pve-Debian"
-               run_script "https://js.xiray.cc.cd/https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh" "pve-debian.sh"
+               run_script "https://js.xiray.de5.net/https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/vm/debian-vm.sh" "pve-debian.sh"
                pause_return ;;
             j) banner "Docker 加速"
                run_script "https://raw.githubusercontent.com/sky22333/hubproxy/main/install.sh" "hubproxy.sh" "" sh
@@ -610,7 +610,7 @@ menu() {
                    Alpine) apk add unzip >/dev/null 2>&1 ;;
                esac
                rm -rf "$WORK_DIR/clash-for-linux-install"
-               if git clone --branch master --depth 1 https://js.xiray.cc.cd/https://github.com/nelvko/clash-for-linux-install.git "$WORK_DIR/clash-for-linux-install" 2>/dev/null; then
+               if git clone --branch master --depth 1 https://js.xiray.de5.net/https://github.com/nelvko/clash-for-linux-install.git "$WORK_DIR/clash-for-linux-install" 2>/dev/null; then
                    if [[ -t 0 ]]; then
                        bash "$WORK_DIR/clash-for-linux-install/install.sh"
                    elif [[ -r /dev/tty ]]; then
