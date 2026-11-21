@@ -1,6 +1,6 @@
 services:
   parse-video-py:
-    image: wujunwei928/parse-video-py
+    image: ghcr.io/f1161291/parse-video-py:latest
     container_name: parse-video-py
     restart: always
     ports:
