@@ -1,0 +1,18 @@
+services:
+  dsh:
+    image: registry.cn-hangzhou.aliyuncs.com/skymirror/dsh:latest
+    container_name: dsh
+    restart: always
+    command: ["--trusted-host", "宿主机IP"]
+    ports:
+      - "3080:3080"
+    environment:
+      - DSH_HOME=/home/dsh/.dsh
+      - HOME=/workspace
+      - DSH_NPM_REGISTRY=https://registry.npmmirror.com
+    volumes:
+      - dsh-data:/home/dsh/.dsh
+      - ./workspace:/workspace
+
+volumes:
+  dsh-data:
